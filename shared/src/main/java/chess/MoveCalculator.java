@@ -18,6 +18,7 @@ public class MoveCalculator {
             return
         }
         if (piece.getPieceType() == ChessPiece.PieceType.QUEEN) {
+            //Combine Rook and Bishop moves
             return MoveCalculator.rookMoves(piece, board, position) + MoveCalculator.bishopMoves(piece, board, position);
         }
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
@@ -253,7 +254,44 @@ public class MoveCalculator {
         return possibleMoves;
     }
 
-    private static Collection<ChessMove> kingMoves(ChessPiece piece, ChessBoard board, ChessPosition position){
+    private static Collection<ChessMove> pawnMoves(ChessPiece piece, ChessBoard board, ChessPosition position) {
+        ArrayList<ChessMove> possibleMoves = new ArrayList<ChessMove>();
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            if (position.getRow() == 2) {
+                if (board.getPiece(new ChessPosition(position.getRow() + 2, position.getColumn())) == null) {
+                    possibleMoves.add(new ChessMove(position, new ChessPosition(position.getRow() + 2, position.getColumn()), null));
+                }
+            }
+            if (position.getRow() < 7) {
+                if (board.getPiece(new ChessPosition(position.getRow(), position.getColumn())) == null) {
+                    possibleMoves.add(new ChessMove(position, new ChessPosition(position.getRow() + 1, position.getColumn()), null));
+                }
+                if (board.getPiece(new ChessPosition(position.getRow() + 1, position.getColumn() - 1)).getTeamColor() == ChessGame.TeamColor.BLACK) {
+                    possibleMoves.add(new ChessMove(position, new ChessPosition(position.getRow() + 1, position.getColumn() - 1), null));
+                }
+                if (board.getPiece(new ChessPosition(position.getRow() + 1, position.getColumn() + 1)).getTeamColor() == ChessGame.TeamColor.BLACK) {
+                    possibleMoves.add(new ChessMove(position, new ChessPosition(position.getRow() + 1, position.getColumn() + 1), null));
+                }
+            }
+
+            //Pawn promotion
+            if (position.getRow() == 7) {
+                if (board.getPiece(new ChessPosition(position.getRow(), position.getColumn())) == null) {
+                    possibleMoves.add(new ChessMove(position, new ChessPosition(position.getRow() + 1, position.getColumn()), null));
+                }
+                if (board.getPiece(new ChessPosition(position.getRow() + 1, position.getColumn() - 1)).getTeamColor() == ChessGame.TeamColor.BLACK) {
+                    possibleMoves.add(new ChessMove(position, new ChessPosition(position.getRow() + 1, position.getColumn() - 1), null));
+                }
+                if (board.getPiece(new ChessPosition(position.getRow() + 1, position.getColumn() + 1)).getTeamColor() == ChessGame.TeamColor.BLACK) {
+                    possibleMoves.add(new ChessMove(position, new ChessPosition(position.getRow() + 1, position.getColumn() + 1), null));
+                }
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    private static Collection<ChessMove> kingMoves(ChessPiece piece, ChessBoard board, ChessPosition position) {
         ArrayList<ChessMove> possibleMoves = new ArrayList<ChessMove>();
         // Moving left and down
         if (position.getRow() > 1 && position.getColumn() > 1) {
