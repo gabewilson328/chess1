@@ -75,6 +75,10 @@ public class ChessGame implements Cloneable {
             for (ChessMove aMove : okMoves) {
                 fakeBoard = (ChessBoard) board.clone();
                 //make move on fakeBoard by deleting piece and adding it too endPosition
+                ChessPosition endPosition = aMove.getEndPosition();
+                fakeBoard.addPiece(endPosition, myPiece);
+                fakeBoard[startPosition.getRow()][startPosition.getColumn()] = null;
+
                 if (isInCheck(myPiece.getTeamColor(), fakeBoard)) {
                     okMoves.remove(aMove);
                 }
