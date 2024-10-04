@@ -67,12 +67,15 @@ public class ChessGame implements Cloneable {
 
 
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        try {
-            Collection<ChessMove> okMoves = new ArrayList<ChessMove>();
-            ChessBoard fakeBoard;
-            ChessPiece myPiece = board.getPiece(startPosition);
-            okMoves.addAll(myPiece.pieceMoves(board, startPosition));
-            for (ChessMove aMove : okMoves) {
+        Collection<ChessMove> okMoves = new ArrayList<ChessMove>();
+        ChessBoard fakeBoard;
+        ChessPiece myPiece = board.getPiece(startPosition);
+        if (myPiece == null) {
+            return null;
+        }
+        okMoves.addAll(myPiece.pieceMoves(board, startPosition));
+        for (ChessMove aMove : okMoves) {
+            try {
                 fakeBoard = (ChessBoard) board.clone();
                 //make move on fakeBoard by deleting piece and adding it too endPosition
                 ChessPosition endPosition = aMove.getEndPosition();
@@ -82,12 +85,11 @@ public class ChessGame implements Cloneable {
                 if (isInCheck(myPiece.getTeamColor(), fakeBoard)) {
                     okMoves.remove(aMove);
                 }
+            } catch (CloneNotSupportedException e) {
             }
-            return okMoves;
-        } catch (Exception e) {
-            System.out.println("thrown error");
+
         }
-        return null;
+        return okMoves;
     }
 
     /**
@@ -137,11 +139,13 @@ public class ChessGame implements Cloneable {
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
                 ChessPosition currentSquare = new ChessPosition(i, j);
-                if (fakeBoard.getPiece(currentSquare).getPieceType() == ChessPiece.PieceType.KING && fakeBoard.getPiece(currentSquare).getTeamColor() == teamColor) {
-                    kingPosition = new ChessPosition(i, j);
-                }
-                if (fakeBoard.getPiece(currentSquare).getTeamColor() != teamColor) {
-                    enemyMoves.addAll(fakeBoard.getPiece(currentSquare).pieceMoves(fakeBoard, currentSquare));
+                if (fakeBoard.getPiece(currentSquare) != null) {
+                    if (fakeBoard.getPiece(currentSquare).getPieceType() == ChessPiece.PieceType.KING && fakeBoard.getPiece(currentSquare).getTeamColor() == teamColor) {
+                        kingPosition = new ChessPosition(i, j);
+                    }
+                    if (fakeBoard.getPiece(currentSquare).getTeamColor() != teamColor) {
+                        enemyMoves.addAll(fakeBoard.getPiece(currentSquare).pieceMoves(fakeBoard, currentSquare));
+                    }
                 }
             }
         }
