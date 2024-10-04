@@ -99,7 +99,11 @@ public class ChessGame implements Cloneable {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPosition startPosition = move.getStartPosition();
+        ChessPosition endPosition = move.getEndPosition();
+        
+        board.addPiece(endPosition, board.getPiece(startPosition));
+        board.addPiece(startPosition, null);
     }
 
     /**
