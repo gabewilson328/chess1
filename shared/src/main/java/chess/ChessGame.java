@@ -77,7 +77,7 @@ public class ChessGame implements Cloneable {
                 //make move on fakeBoard by deleting piece and adding it too endPosition
                 ChessPosition endPosition = aMove.getEndPosition();
                 fakeBoard.addPiece(endPosition, myPiece);
-                fakeBoard[startPosition.getRow()][startPosition.getColumn()] = null;
+                fakeBoard.addPiece(startPosition, null);
 
                 if (isInCheck(myPiece.getTeamColor(), fakeBoard)) {
                     okMoves.remove(aMove);
@@ -140,11 +140,12 @@ public class ChessGame implements Cloneable {
                 if (fakeBoard.getPiece(currentSquare).getPieceType() == ChessPiece.PieceType.KING && fakeBoard.getPiece(currentSquare).getTeamColor() == teamColor) {
                     kingPosition = new ChessPosition(i, j);
                 }
-                if (fakeBoard.getPiece(currentSquare).getTeamColor() == TeamColor.BLACK) {
+                if (fakeBoard.getPiece(currentSquare).getTeamColor() != teamColor) {
                     enemyMoves.addAll(fakeBoard.getPiece(currentSquare).pieceMoves(fakeBoard, currentSquare));
                 }
             }
         }
+
         //iterate through possible moves of all of enemy's pieces and look at endPosition of those pieces
         for (ChessMove aMove : enemyMoves) {
             if (aMove.getEndPosition() == kingPosition) {
