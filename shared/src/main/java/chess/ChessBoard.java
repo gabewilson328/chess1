@@ -79,4 +79,18 @@ public class ChessBoard {
         squares[7][6] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
         squares[7][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
     }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        ChessBoard fakeBoard = new ChessBoard();
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPiece piece = this.squares[row][col];
+                if (piece != null) {
+                    fakeBoard.addPiece(new ChessPosition(row, col), (ChessPiece) piece.clone()); // Clone each piece
+                }
+            }
+        }
+        return fakeBoard;
+    }
 }

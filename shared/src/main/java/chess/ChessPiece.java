@@ -1,8 +1,6 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -37,7 +35,7 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        return this.color;
+        return color;
     }
 
     /**
@@ -69,5 +67,12 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         return MoveCalculator.getMoves(this, board, myPosition);
+    }
+
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        ChessPiece fakePiece = new ChessPiece(this.color, this.type);
+        return fakePiece;
     }
 }
