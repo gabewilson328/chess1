@@ -101,7 +101,7 @@ public class ChessGame implements Cloneable {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition endPosition = move.getEndPosition();
-        
+
         board.addPiece(endPosition, board.getPiece(startPosition));
         board.addPiece(startPosition, null);
     }
@@ -119,11 +119,13 @@ public class ChessGame implements Cloneable {
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
                 ChessPosition currentSquare = new ChessPosition(i, j);
-                if (board.getPiece(currentSquare).getPieceType() == ChessPiece.PieceType.KING && board.getPiece(currentSquare).getTeamColor() == teamColor) {
-                    kingPosition = new ChessPosition(i, j);
-                }
-                if (board.getPiece(currentSquare).getTeamColor() == TeamColor.BLACK) {
-                    enemyMoves.addAll(board.getPiece(currentSquare).pieceMoves(board, currentSquare));
+                if (board.getPiece(currentSquare) != null) {
+                    if (board.getPiece(currentSquare).getPieceType() == ChessPiece.PieceType.KING && board.getPiece(currentSquare).getTeamColor() == teamColor) {
+                        kingPosition = new ChessPosition(i, j);
+                    }
+                    if (board.getPiece(currentSquare).getTeamColor() == TeamColor.BLACK) {
+                        enemyMoves.addAll(board.getPiece(currentSquare).pieceMoves(board, currentSquare));
+                    }
                 }
             }
         }

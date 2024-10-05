@@ -83,11 +83,11 @@ public class ChessBoard {
     @Override
     protected Object clone() throws CloneNotSupportedException {
         ChessBoard fakeBoard = new ChessBoard();
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                ChessPiece piece = this.squares[row][col];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                ChessPiece piece = this.squares[i][j];
                 if (piece != null) {
-                    fakeBoard.addPiece(new ChessPosition(row, col), (ChessPiece) piece.clone());
+                    fakeBoard.addPiece(new ChessPosition(i, j), (ChessPiece) piece.clone());
                 }
             }
         }
