@@ -105,14 +105,14 @@ public class ChessGame implements Cloneable {
         ChessPiece.PieceType promotionPiece = move.getPromotionPiece();
 
         Collection<ChessMove> goodMoves = validMoves(startPosition);
-        if (goodMoves == null || !goodMoves.contains(move) || turn != board.getPiece(move.getStartPosition()).getTeamColor()) {
+        if (goodMoves == null || !goodMoves.contains(move)
+                || turn != board.getPiece(move.getStartPosition()).getTeamColor()) {
             throw new InvalidMoveException("Invalid move");
         }
 
 
         if (promotionPiece != null) {
-            board.addPiece(endPosition, board.getPiece(startPosition));
-            
+            board.addPiece(endPosition, new ChessPiece(board.getPiece(startPosition).getTeamColor(), promotionPiece));
         } else {
             board.addPiece(endPosition, board.getPiece(startPosition));
         }
