@@ -87,7 +87,7 @@ public class ChessBoard {
             for (int j = 0; j < 8; j++) {
                 ChessPiece piece = this.squares[i][j];
                 if (piece != null) {
-                    fakeBoard.addPiece(new ChessPosition(i, j), (ChessPiece) piece.clone());
+                    fakeBoard.addPiece(new ChessPosition(i + 1, j + 1), (ChessPiece) piece.clone());
                 }
             }
         }

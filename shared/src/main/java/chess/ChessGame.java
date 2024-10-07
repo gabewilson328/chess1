@@ -68,6 +68,7 @@ public class ChessGame implements Cloneable {
 
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         Collection<ChessMove> okMoves = new ArrayList<ChessMove>();
+        Collection<ChessMove> validMoves = new ArrayList<>();
         ChessBoard fakeBoard;
         ChessPiece myPiece = board.getPiece(startPosition);
         if (myPiece == null) {
@@ -82,14 +83,14 @@ public class ChessGame implements Cloneable {
                 fakeBoard.addPiece(endPosition, myPiece);
                 fakeBoard.addPiece(startPosition, null);
 
-                if (isInCheck(myPiece.getTeamColor(), fakeBoard)) {
-                    okMoves.remove(aMove);
+                if (!isInCheck(myPiece.getTeamColor(), fakeBoard)) {
+                    validMoves.add(aMove);
                 }
             } catch (CloneNotSupportedException e) {
             }
 
         }
-        return okMoves;
+        return validMoves;
     }
 
     /**
@@ -113,29 +114,7 @@ public class ChessGame implements Cloneable {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        Collection<ChessMove> enemyMoves = new ArrayList<ChessMove>();
-        ChessPosition kingPosition = null;
-        //find position of my king
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 8; j++) {
-                ChessPosition currentSquare = new ChessPosition(i, j);
-                if (board.getPiece(currentSquare) != null) {
-                    if (board.getPiece(currentSquare).getPieceType() == ChessPiece.PieceType.KING && board.getPiece(currentSquare).getTeamColor() == teamColor) {
-                        kingPosition = new ChessPosition(i, j);
-                    }
-                    if (board.getPiece(currentSquare).getTeamColor() == TeamColor.BLACK) {
-                        enemyMoves.addAll(board.getPiece(currentSquare).pieceMoves(board, currentSquare));
-                    }
-                }
-            }
-        }
-        //iterate through possible moves of all of enemy's pieces and look at endPosition of those pieces
-        for (ChessMove aMove : enemyMoves) {
-            if (aMove.getEndPosition() == kingPosition) {
-                return true;
-            }
-        }
-        return false;
+        return isInCheck(teamColor, board);
     }
 
     public boolean isInCheck(TeamColor teamColor, ChessBoard fakeBoard) {
@@ -146,7 +125,8 @@ public class ChessGame implements Cloneable {
             for (int j = 1; j <= 8; j++) {
                 ChessPosition currentSquare = new ChessPosition(i, j);
                 if (fakeBoard.getPiece(currentSquare) != null) {
-                    if (fakeBoard.getPiece(currentSquare).getPieceType() == ChessPiece.PieceType.KING && fakeBoard.getPiece(currentSquare).getTeamColor() == teamColor) {
+                    if (fakeBoard.getPiece(currentSquare).getPieceType() == ChessPiece.PieceType.KING
+                            && fakeBoard.getPiece(currentSquare).getTeamColor() == teamColor) {
                         kingPosition = new ChessPosition(i, j);
                     }
                     if (fakeBoard.getPiece(currentSquare).getTeamColor() != teamColor) {
@@ -158,7 +138,7 @@ public class ChessGame implements Cloneable {
 
         //iterate through possible moves of all of enemy's pieces and look at endPosition of those pieces
         for (ChessMove aMove : enemyMoves) {
-            if (aMove.getEndPosition() == kingPosition) {
+            if (aMove.getEndPosition().equals(kingPosition)) {
                 return true;
             }
         }
@@ -176,7 +156,7 @@ public class ChessGame implements Cloneable {
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
                 ChessPosition currentSquare = new ChessPosition(i, j);
-                if (board.getPiece(currentSquare).getTeamColor() == teamColor) {
+                if (board.getPiece(currentSquare) != null && board.getPiece(currentSquare).getTeamColor() == teamColor) {
                     allValidMoves.addAll(validMoves(currentSquare));
                 }
             }
@@ -199,7 +179,7 @@ public class ChessGame implements Cloneable {
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
                 ChessPosition currentSquare = new ChessPosition(i, j);
-                if (board.getPiece(currentSquare).getTeamColor() == teamColor) {
+                if (board.getPiece(currentSquare) != null && board.getPiece(currentSquare).getTeamColor() == teamColor) {
                     allValidMoves.addAll(validMoves(currentSquare));
                 }
             }
