@@ -110,7 +110,6 @@ public class ChessGame implements Cloneable {
             throw new InvalidMoveException("Invalid move");
         }
 
-
         if (promotionPiece != null) {
             board.addPiece(endPosition, new ChessPiece(board.getPiece(startPosition).getTeamColor(), promotionPiece));
         } else {
