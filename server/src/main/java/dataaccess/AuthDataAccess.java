@@ -6,27 +6,39 @@ import java.util.ArrayList;
 
 public class AuthDataAccess implements AuthDataInterface {
 
-    ArrayList<AuthData> authData = new ArrayList<AuthData>();
+    ArrayList<AuthData> allAuthData = new ArrayList<AuthData>();
 
     public AuthDataAccess(String authToken, String username) {
 
     }
 
-    @Override
-    public void addAuth(AuthData userAuth) {
-        authData.add(userAuth);
+    public AuthDataAccess(String authToken) {
+
     }
 
+    //this method takes an authdata
     @Override
-    public AuthData getAuth(AuthData userAuth) {
-        if (authData.contains(userAuth)) {
-            return userAuth;
+    public void addAuth(AuthData userAuth) {
+        allAuthData.add(userAuth);
+    }
+
+    //these two methods just take an authtoken but getAuth returns an AuthData
+    @Override
+    public AuthData getAuth(String authToken) {
+        for (AuthData datum : allAuthData) {
+            if (datum.getAuthToken() == authToken) {
+                return datum;
+            }
         }
         return null;
     }
 
     @Override
-    public void deleteAuth(AuthData authToken) {
-        authData.remove(authToken);
+    public void deleteAuth(String authToken) {
+        for (AuthData datum : allAuthData) {
+            if (datum.getAuthToken() == authToken) {
+                allAuthData.remove(datum);
+            }
+        }
     }
 }

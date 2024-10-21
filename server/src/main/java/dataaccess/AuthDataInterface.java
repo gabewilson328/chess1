@@ -3,9 +3,9 @@ package dataaccess;
 import model.AuthData;
 
 public interface AuthDataInterface {
-    public void addAuth(AuthData authToken);
+    public void addAuth(AuthData authData);
 
-    public AuthData getAuth(AuthData authToken);
+    public AuthData getAuth(String authToken);
 
-    public void deleteAuth(AuthData authToken);
+    public void deleteAuth(String authToken);
 }

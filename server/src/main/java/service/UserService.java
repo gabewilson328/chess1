@@ -16,7 +16,7 @@ public class UserService {
             AuthData newUserAuth = new AuthData(myAuth, user.getUsername());
             AuthDataAccess authToCreate = new AuthDataAccess(newUserAuth.getAuthToken(), user.getUsername());
             authToCreate.addAuth(newUserAuth);
-            return newUserAuth; //
+            return newUserAuth; //this is wrong but I don't know how to return text plus this
         } else {
             throw new RuntimeException("User already exists");
         }
@@ -36,9 +36,11 @@ public class UserService {
         }
     }
 
-    public void logout(AuthData auth) {
-        if (AuthDataAccess.getAuth(auth) != null) {
-            AuthDataAccess.deleteAuth(auth);
+    public void logout(String authToken) {
+        AuthDataAccess authDataAccess = new AuthDataAccess(authToken);
+
+        if (authDataAccess.getAuth(authToken) != null) {
+            authDataAccess.deleteAuth(authToken);
         } else {
             throw new RuntimeException("Auth token does not exist");
         }

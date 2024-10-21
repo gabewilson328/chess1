@@ -9,7 +9,9 @@ public class GameDataAccess implements GameDataInterface {
     ArrayList<GameData> games = new ArrayList<GameData>();
 
     public GameDataAccess(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game) {
+    }
 
+    public GameDataAccess(String gameName) {
     }
 
     @Override
@@ -18,12 +20,17 @@ public class GameDataAccess implements GameDataInterface {
     }
 
     @Override
-    public void getGame(GameData game) {
-
+    public GameData getGame(String gameName) {
+        for (GameData game : games) {
+            if (game.getGameName() == gameName) {
+                return game;
+            }
+        }
+        return null;
     }
 
     @Override
-    public ArrayList<GameData> listGames() {
+    public ArrayList<GameData> listAllGames() {
         return games;
     }
 

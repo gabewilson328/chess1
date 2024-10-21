@@ -7,9 +7,9 @@ import java.util.ArrayList;
 public interface GameDataInterface {
     public void addGame(GameData game);
 
-    public void getGame(GameData game);
+    public GameData getGame(String gameName);
 
-    public ArrayList<GameData> listGames();
+    public ArrayList<GameData> listAllGames();
 
     public void updateGame(GameData game);
 
