@@ -6,51 +6,59 @@ import java.util.UUID;
 import chess.ChessGame;
 import dataaccess.AuthDataAccess;
 import dataaccess.GameDataAccess;
+import dataaccess.UnauthorizedException;
 import dataaccess.UserDataAccess;
 import model.AuthData;
 import model.GameData;
+import request.JoinGameRequest;
+import result.CreateGameResult;
+import result.ListGamesResult;
 
-public class GameService {//help moving gameservice back to service because i fell asleep and accidentally changed it
+import javax.imageio.plugins.jpeg.JPEGQTable;
 
-    public ArrayList<GameData> listGames(String authToken) {
-        AuthDataAccess authDataAccess = new AuthDataAccess(authToken);
+public class GameService {
+    public ListGamesResult listGames(String authToken, AuthDataAccess authDataAccess, GameDataAccess gameDataAccess) {
         if (authDataAccess.getAuth(authToken) != null) {
-            return listAllGames(); //how to call this function
+            ListGamesResult games = new ListGamesResult(gameDataAccess.listAllGames());
+            return games;
         } else {
             throw new RuntimeException("Auth token invalid");
         }
 
     }
 
-    public String createGame(String authToken, String gameName) {
-        AuthDataAccess authDataAccess = new AuthDataAccess(authToken);
-        GameDataAccess gameDataAccess = new GameDataAccess(gameName);
+    int gameNumber = 1;
 
+    public CreateGameResult createGame(String authToken, String gameName, AuthDataAccess authDataAccess, GameDataAccess gameDataAccess) {
         if (authDataAccess.getAuth(authToken) != null) {
-            if (gameDataAccess.getGame(gameName) == null) {
+            if (gameDataAccess.getGameByName(gameName) == null) {
                 //get all data including white username and black username, gameName, and create a game
-                String gameID = UUID.randomUUID().toString();
-                String whiteUsername = "";
-                String blackUsername = "";
+                int gameID = gameNumber;
+                String whiteUsername = null;
+                String blackUsername = null;
                 ChessGame newGame;
-                return gameID; //this is wrong but I don't know how to return text plus this
+                GameData createdGame = new GameData(gameID, whiteUsername, blackUsername, gameName, newGame);
+                gameDataAccess.addGame(createdGame);
+                CreateGameResult createdID = new CreateGameResult(gameID);
+                gameNumber++;
+                return createdID;
             } else {
-                throw new RuntimeException("A game of that name already exists");
+                throw new UnauthorizedException("A game of that name already exists");
             }
         } else {
-            throw new RuntimeException("Auth token invalid");
+            throw new UnauthorizedException("Auth token invalid");
         }
     }
 
-    public void joinGame(AuthData authToken, GameData playerColor, GameData gameID) {
-        if (AuthDataAccess.getAuth(authToken) != null) {
-            if (GameDataAccess.getGame(gameID) == null) {
-                GameDataAccess.updateGame(gameID);
+    public void joinGame(JoinGameRequest joinGameRequest, String username, AuthDataAccess authDataAccess, GameDataAccess gameDataAccess) {
+        if (authDataAccess.getAuth(joinGameRequest.authToken()) != null) {
+            if (gameDataAccess.getGameByID(joinGameRequest.gameID()) != null) {
+                gameDataAccess.joinGameAsColor(joinGameRequest.color(), joinGameRequest.gameID(), username);
             } else {
-                throw new RuntimeException("Game does not exist");
+                throw new UnauthorizedException("Game does not exist");
             }
         } else {
-            throw new RuntimeException("Auth token does not exist");
+            throw new UnauthorizedException("Auth token does not exist");
         }
     }
 }

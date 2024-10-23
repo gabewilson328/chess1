@@ -6,9 +6,9 @@ import dataaccess.GameDataAccess;
 import dataaccess.AuthDataAccess;
 
 public class ClearService {
-    public AuthData clear() {
-        GameDataAccess.deleteAllGames();
-        AuthDataAccess.deleteAuth();
-        UserDataAccess.deleteUser();
+    public void clear(GameDataAccess gameDataAccess, AuthDataAccess authDataAccess, UserDataAccess userDataAccess) {
+        gameDataAccess.deleteAllGames();
+        authDataAccess.deleteAllAuth();
+        userDataAccess.deleteAllUsers();
     }
 }

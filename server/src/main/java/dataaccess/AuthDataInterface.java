@@ -8,4 +8,6 @@ public interface AuthDataInterface {
     public AuthData getAuth(String authToken);
 
     public void deleteAuth(String authToken);
+
+    public void deleteAllAuth();
 }
