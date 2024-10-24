@@ -20,7 +20,7 @@ public class GameDataAccess implements GameDataInterface {
     @Override
     public GameData getGameByName(String gameName) {
         for (GameData game : games) {
-            if (game.gameName() == gameName) {
+            if (Objects.equals(game.gameName(), gameName)) {
                 return game;
             }
         }
@@ -44,22 +44,30 @@ public class GameDataAccess implements GameDataInterface {
     }
 
     @Override
-    public void updateGame(GameData game) {
-
+    public void updateGame(GameData game, ChessGame.TeamColor color, String username) {
+        if (color == ChessGame.TeamColor.WHITE) {
+            GameData newGame = new GameData(game.gameID(), username, game.blackUsername(), game.gameName(), game.game());
+            addGame(newGame);
+            games.remove(game);
+        }
+        if (color == ChessGame.TeamColor.BLACK) {
+            GameData newGame = new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game());
+            addGame(newGame);
+            games.remove(game);
+        }
     }
+    //create a new game, copy all elements of old game into new game except whiteusername/blackusername, delete old game
 
     @Override
     public void joinGameAsColor(ChessGame.TeamColor playerColor, int gameID, String username) {
         for (GameData game : games) {
             if (game.gameID() == gameID) {
-                if (playerColor == ChessGame.TeamColor.WHITE) {
-                    game.whiteUsername() = username;
-                } else if (playerColor == ChessGame.TeamColor.BLACK) {
-                    game.blackUsername() = username;
-                }
+                updateGame(game, playerColor, username);
             }
         }
     }
+
+    //create a new game, copy all elements of old game into new game except whiteusername/blackusername, delete old game
 
     @Override
     public void deleteAllGames() {

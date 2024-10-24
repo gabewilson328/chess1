@@ -21,7 +21,7 @@ public class AuthDataAccess implements AuthDataInterface {
     @Override
     public AuthData getAuth(String authToken) {
         for (AuthData datum : allAuthData) {
-            if (datum.authToken() == authToken) {
+            if (datum.authToken().equals(authToken)) {
                 return datum;
             }
         }
@@ -31,7 +31,7 @@ public class AuthDataAccess implements AuthDataInterface {
     @Override
     public void deleteAuth(String authToken) {
         for (AuthData datum : allAuthData) {
-            if (datum.authToken() == authToken) {
+            if (datum.authToken().equals(authToken)) {
                 allAuthData.remove(datum);
             }
         }

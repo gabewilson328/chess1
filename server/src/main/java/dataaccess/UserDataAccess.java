@@ -21,7 +21,7 @@ public class UserDataAccess implements UserDataInterface {
     @Override
     public UserData getUser(String username) {
         for (UserData eachUser : users) {
-            if (eachUser.username() == username) {
+            if (Objects.equals(eachUser.username(), username)) {
                 return eachUser;
             }
         }
@@ -31,8 +31,8 @@ public class UserDataAccess implements UserDataInterface {
     @Override
     public boolean verifyPassword(LoginRequest loginRequest) {
         for (UserData eachUser : users) {
-            if (eachUser.username() == loginRequest.username()) {
-                if (eachUser.password() == loginRequest.password()) {
+            if (Objects.equals(eachUser.username(), loginRequest.username())) {
+                if (Objects.equals(eachUser.password(), loginRequest.password())) {
                     return true;
                 }
             }

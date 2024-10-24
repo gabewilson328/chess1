@@ -5,7 +5,6 @@ import dataaccess.UnauthorizedException;
 import dataaccess.UserDataAccess;
 import model.AuthData;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 import request.LoginRequest;
 import request.RegisterRequest;
 import result.LoginResult;
@@ -14,7 +13,7 @@ import result.RegisterResult;
 import java.util.UUID;
 
 public class UserService {
-    public RegisterResult register(RegisterRequest registerRequest, UserDataAccess userList, AuthDataAccess authList) {
+    public RegisterResult registerService(RegisterRequest registerRequest, UserDataAccess userList, AuthDataAccess authList) throws UnauthorizedException {
         if (userList.getUser(registerRequest.username()) == null) {
             UserData user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
             userList.addUser(user);
@@ -28,11 +27,11 @@ public class UserService {
         }
     }
 
-    public LoginResult login(LoginRequest loginRequest, UserDataAccess userDataAccess, AuthDataAccess authDataAccess) {
-        if (userDataAccess.getUser(loginRequest.username()) != null && userDataAccess.verifyPassword(loginRequest)) {
+    public LoginResult loginService(LoginRequest loginRequest, UserDataAccess userList, AuthDataAccess authList) throws UnauthorizedException {
+        if (userList.getUser(loginRequest.username()) != null && userList.verifyPassword(loginRequest)) {
             String myAuth = UUID.randomUUID().toString();
             AuthData returningUserAuth = new AuthData(myAuth, loginRequest.username());
-            authDataAccess.addAuth(returningUserAuth);
+            authList.addAuth(returningUserAuth);
             LoginResult loginResult = new LoginResult(myAuth, loginRequest.username());
             return loginResult;
         } else {
@@ -40,11 +39,11 @@ public class UserService {
         }
     }
 
-    public void logout(String authToken, AuthDataAccess authDataAccess) {
-        if (authDataAccess.getAuth(authToken) != null) {
-            authDataAccess.deleteAuth(authToken);
+    public void logoutService(String authToken, AuthDataAccess authList) throws UnauthorizedException {
+        if (authList.getAuth(authToken) != null) {
+            authList.deleteAuth(authToken);
         } else {
-            throw new RuntimeException("Auth token does not exist");
+            throw new UnauthorizedException("Auth token does not exist");
         }
     }
 }

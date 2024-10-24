@@ -14,7 +14,7 @@ public interface GameDataInterface {
 
     public ArrayList<GameData> listAllGames();
 
-    public void updateGame(GameData game);
+    public void updateGame(GameData game, ChessGame.TeamColor color, String username);
 
     public void joinGameAsColor(ChessGame.TeamColor playerColor, int gameID, String username);
 
