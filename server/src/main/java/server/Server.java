@@ -114,7 +114,7 @@ public class Server {
     private Object listGames(Request req, Response res) {
         var serializer = new Gson();
         try {
-            ListGamesRequest listGamesRequest = serializer.fromJson(req.body(), ListGamesRequest.class);
+            ListGamesRequest listGamesRequest = new ListGamesRequest(req.headers("authorization"));
             String result = serializer.toJson(gameService.listGamesService(listGamesRequest.authToken(), authList, gameList));
             res.status(200);
             res.body(result);
@@ -159,8 +159,8 @@ public class Server {
         var serializer = new Gson();
         try {
             JoinGameRequest preJoinGameRequest = serializer.fromJson(req.body(), JoinGameRequest.class);
-            JoinGameRequest joinGameRequest = new JoinGameRequest(req.headers("authorization"), preJoinGameRequest.color(), preJoinGameRequest.gameID());
-            if (joinGameRequest.authToken() != null && joinGameRequest.color() != null && joinGameRequest.gameID() != null) {
+            JoinGameRequest joinGameRequest = new JoinGameRequest(req.headers("authorization"), preJoinGameRequest.playerColor(), preJoinGameRequest.gameID());
+            if (joinGameRequest.authToken() != null && joinGameRequest.playerColor() != null && joinGameRequest.gameID() != null) {
                 gameService.joinGameService(joinGameRequest, authList, gameList);
                 res.status(200);
                 res.body("{}");

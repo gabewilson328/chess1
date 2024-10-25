@@ -30,10 +30,16 @@ public class AuthDataAccess implements AuthDataInterface {
 
     @Override
     public void deleteAuth(String authToken) {
+        AuthData datumToDelete = null;
+        boolean possible = false;
         for (AuthData datum : allAuthData) {
             if (datum.authToken().equals(authToken)) {
-                allAuthData.remove(datum);
+                datumToDelete = datum;
+                possible = true;
             }
+        }
+        if (possible) {
+            allAuthData.remove(datumToDelete);
         }
     }
 

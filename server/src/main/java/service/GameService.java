@@ -51,10 +51,10 @@ public class GameService {
                 String username = authList.getAuth(joinGameRequest.authToken()).username();
                 boolean whiteEmpty = gameList.getGameByID(joinGameRequest.gameID()).whiteUsername() == null;
                 boolean blackEmpty = gameList.getGameByID(joinGameRequest.gameID()).blackUsername() == null;
-                if (whiteEmpty && joinGameRequest.color() == ChessGame.TeamColor.WHITE) {
-                    gameList.joinGameAsColor(joinGameRequest.color(), joinGameRequest.gameID(), username);
-                } else if (blackEmpty && joinGameRequest.color() == ChessGame.TeamColor.BLACK) {
-                    gameList.joinGameAsColor(joinGameRequest.color(), joinGameRequest.gameID(), username);
+                if (whiteEmpty && joinGameRequest.playerColor() == ChessGame.TeamColor.WHITE) {
+                    gameList.joinGameAsColor(joinGameRequest.playerColor(), joinGameRequest.gameID(), username);
+                } else if (blackEmpty && joinGameRequest.playerColor() == ChessGame.TeamColor.BLACK) {
+                    gameList.joinGameAsColor(joinGameRequest.playerColor(), joinGameRequest.gameID(), username);
                 } else {
                     throw new TakenException("Color isn't available");
                 }
