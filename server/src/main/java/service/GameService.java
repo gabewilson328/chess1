@@ -1,11 +1,7 @@
 package service;
 
-import java.util.ArrayList;
-import java.util.UUID;
-
 import chess.ChessGame;
 import dataaccess.*;
-import model.AuthData;
 import model.GameData;
 import request.JoinGameRequest;
 import result.CreateGameResult;
