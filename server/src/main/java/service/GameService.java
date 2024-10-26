@@ -14,8 +14,7 @@ import result.ListGamesResult;
 public class GameService {
     public ListGamesResult listGamesService(String authToken, AuthDataAccess authList, GameDataAccess gameList) throws UnauthorizedException {
         if (authList.getAuth(authToken) != null) {
-            ListGamesResult games = new ListGamesResult(gameList.listAllGames());
-            return games;
+            return new ListGamesResult(gameList.listAllGames());
         } else {
             throw new UnauthorizedException("Auth token invalid");
         }

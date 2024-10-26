@@ -17,6 +17,7 @@ import request.CreateGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
 import result.CreateGameResult;
+import result.ListGamesResult;
 import result.LoginResult;
 import result.RegisterResult;
 
@@ -35,7 +36,7 @@ public class UnitTests {
 
         Assertions.assertEquals(username, result.username(), "Username is wrong");
         Assertions.assertNotNull(result.authToken(), "Auth token is null");
-        Assertions.assertNotNull(userList.getUser(username));
+        Assertions.assertNotNull(userList.getUser(username), "Didn't store the username");
     }
 
     @Test
@@ -59,46 +60,32 @@ public class UnitTests {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
-        String fakeAuth = "this shouldn't show";
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
         UserData user = new UserData(username, password, email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
-        LoginResult expectedResult = new LoginResult(fakeAuth, username);
         LoginResult result = userService.loginService(loginRequest, userList, authList);
-        Assertions.assertEquals(expectedResult.username(), result.username(), "Output is not what was expected");
+        Assertions.assertEquals(username, result.username(), "Username is wrong");
+        Assertions.assertNotNull(result.authToken(), "Auth token is null");
+        Assertions.assertNotNull(userList.getUser(username), "Didn't store the username");
     }
 
     @Test
     @DisplayName("Login failed")
-    public void loginFail() {
+    public void loginFail() throws UnauthorizedException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
-        String fakeAuth = "this shouldn't show";
-        RegisterRequest registerRequest = new RegisterRequest(username, password, email);
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        try {
-            RegisterResult registered = userService.registerService(registerRequest, userList, authList);
-        } catch (Exception e) {
-
-        }
-
+        UserData user = new UserData(username, password, email);
+        userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
-        LoginResult expectedResult = new LoginResult(fakeAuth, username);
-
-        try {
-            LoginResult result = userService.loginService(loginRequest, userList, authList);
-
-            Assertions.assertEquals(expectedResult.username(), result.username(), "Output is not what was expected");
-
-        } catch (Exception e) {
-
-        }
+        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () -> userService.loginService(loginRequest, userList, authList));
+        Assertions.assertEquals("Username/password invalid", e.getMessage());
     }
 
     @Test
@@ -107,24 +94,69 @@ public class UnitTests {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
-        String fakeAuth = "this shouldn't show";
-        RegisterRequest registerRequest = new RegisterRequest(username, password, email);
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-
-        RegisterResult registered = userService.registerService(registerRequest, userList, authList);
-
-
+        UserData user = new UserData(username, password, email);
+        userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
-        LoginResult expectedResult = new LoginResult(fakeAuth, username);
-
-
         LoginResult result = userService.loginService(loginRequest, userList, authList);
-
         userService.logoutService(result.authToken(), authList);
+        Assertions.assertNull(authList.getAuth(result.authToken()));
+    }
 
+    @Test
+    @DisplayName("Logout failed")
+    public void logoutFail() throws UnauthorizedException {
+        String username = "testusername";
+        String password = "testpassword";
+        String email = "test@email.com";
+        UserDataAccess userList = new UserDataAccess();
+        AuthDataAccess authList = new AuthDataAccess();
+        UserService userService = new UserService();
+        UserData user = new UserData(username, password, email);
+        userList.addUser(user);
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        LoginResult result = userService.loginService(loginRequest, userList, authList);
+        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () -> userService.logoutService(result.authToken(), authList));
+        Assertions.assertEquals("Auth token does not exist", e.getMessage());
+    }
 
+    @Test
+    @DisplayName("List games successfully")
+    public void listGames() throws UnauthorizedException {
+        String username = "testusername";
+        String password = "testpassword";
+        String email = "test@email.com";
+        UserDataAccess userList = new UserDataAccess();
+        AuthDataAccess authList = new AuthDataAccess();
+        UserService userService = new UserService();
+        UserData user = new UserData(username, password, email);
+        userList.addUser(user);
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
+        ChessGame gameone = new ChessGame();
+        ChessGame gametwo = new ChessGame();
+        ChessGame gamethree = new ChessGame();
+        GameData game1 = new GameData(1, "whiteguy1", "blackguy1", "firstgame", gameone);
+        GameData game2 = new GameData(2, "whiteguy2", "blackguy2", "secondgame", gametwo);
+        GameData game3 = new GameData(3, "whiteguy3", "blackguy3", "thirdgame", gamethree);
+        GameDataAccess gameList = new GameDataAccess();
+        GameService gameService = new GameService();
+        gameList.addGame(game1);
+        gameList.addGame(game2);
+        gameList.addGame(game3);
+        ListGamesResult result = gameService.listGamesService(loginResult.authToken(), authList, gameList);
+        for (GameData aGame : result.games()) {
+            if (aGame.gameID() == 1) {
+                Assertions.assertEquals(game1, aGame, "Games are not displaying correctly");
+            } else if (aGame.gameID() == 2) {
+                Assertions.assertEquals(game2, aGame, "Games are not displaying correctly");
+            } else if (aGame.gameID() == 3) {
+                Assertions.assertEquals(game3, aGame, "Games are not displaying correctly");
+            }
+        }
+        Assertions.assertNull(result);
     }
 
 
