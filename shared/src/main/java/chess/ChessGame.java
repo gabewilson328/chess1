@@ -169,16 +169,8 @@ public class ChessGame implements Cloneable {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        Collection<ChessMove> allValidMoves = new ArrayList<ChessMove>();
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 8; j++) {
-                ChessPosition currentSquare = new ChessPosition(i, j);
-                if (board.getPiece(currentSquare) != null && board.getPiece(currentSquare).getTeamColor() == teamColor) {
-                    allValidMoves.addAll(validMoves(currentSquare));
-                }
-            }
-        }
-        if (isInCheck(teamColor) && allValidMoves.size() == 0) {
+        Collection<ChessMove> allValidMoves = allValidMoves(teamColor);
+        if (isInCheck(teamColor) && allValidMoves.isEmpty()) {
             return true;
         }
         return false;
@@ -192,6 +184,14 @@ public class ChessGame implements Cloneable {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
+        Collection<ChessMove> allValidMoves = allValidMoves(teamColor);
+        if (!isInCheck(teamColor) && allValidMoves.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    private Collection<ChessMove> allValidMoves(TeamColor teamColor) {
         Collection<ChessMove> allValidMoves = new ArrayList<ChessMove>();
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
@@ -201,10 +201,7 @@ public class ChessGame implements Cloneable {
                 }
             }
         }
-        if (!isInCheck(teamColor) && allValidMoves.size() == 0) {
-            return true;
-        }
-        return false;
+        return allValidMoves;
     }
 
     /**

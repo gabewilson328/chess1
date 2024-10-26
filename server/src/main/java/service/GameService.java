@@ -23,7 +23,8 @@ public class GameService {
 
     int gameNumber = 1;
 
-    public CreateGameResult createGameService(String authToken, String gameName, AuthDataAccess authList, GameDataAccess gameList) throws UnauthorizedException {
+    public CreateGameResult createGameService(String authToken, String gameName, AuthDataAccess authList,
+                                              GameDataAccess gameList) throws UnauthorizedException {
         if (authList.getAuth(authToken) != null) {
             if (gameList.getGameByName(gameName) == null) {
                 //get all data including white username and black username, gameName, and create a game
@@ -44,7 +45,8 @@ public class GameService {
         }
     }
 
-    public void joinGameService(JoinGameRequest joinGameRequest, AuthDataAccess authList, GameDataAccess gameList) throws TakenException, UnauthorizedException {
+    public void joinGameService(JoinGameRequest joinGameRequest, AuthDataAccess authList, GameDataAccess gameList)
+            throws TakenException, UnauthorizedException {
         if (authList.getAuth(joinGameRequest.authToken()) != null) {
             if (gameList.getGameByID(joinGameRequest.gameID()) != null) {
                 String username = authList.getAuth(joinGameRequest.authToken()).username();

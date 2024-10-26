@@ -13,7 +13,8 @@ import result.RegisterResult;
 import java.util.UUID;
 
 public class UserService {
-    public RegisterResult registerService(RegisterRequest registerRequest, UserDataAccess userList, AuthDataAccess authList) throws UnauthorizedException {
+    public RegisterResult registerService(RegisterRequest registerRequest, UserDataAccess userList,
+                                          AuthDataAccess authList) throws UnauthorizedException {
         if (userList.getUser(registerRequest.username()) == null) {
             UserData user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
             userList.addUser(user);

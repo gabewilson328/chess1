@@ -51,7 +51,8 @@ public class UnitTests {
         UserData user = new UserData(username, password, email);
         userList.addUser(user);
 
-        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () -> userService.registerService(registerRequest, userList, authList));
+        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () ->
+                userService.registerService(registerRequest, userList, authList));
         Assertions.assertEquals("User already exists", e.getMessage());
     }
 
@@ -85,7 +86,8 @@ public class UnitTests {
         UserData user = new UserData(username, password, email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, "passwordfail");
-        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () -> userService.loginService(loginRequest, userList, authList));
+        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () ->
+                userService.loginService(loginRequest, userList, authList));
         Assertions.assertEquals("Username/password invalid", e.getMessage());
     }
 
@@ -119,7 +121,8 @@ public class UnitTests {
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult result = userService.loginService(loginRequest, userList, authList);
-        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () -> userService.logoutService("jsdlgakjsdakjsd;lfkjas", authList));
+        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () ->
+                userService.logoutService("jsdlgakjsdakjsd;lfkjas", authList));
         Assertions.assertEquals("Auth token does not exist", e.getMessage());
     }
 
@@ -163,16 +166,7 @@ public class UnitTests {
     @Test
     @DisplayName("List games failed")
     public void listGamesFail() throws UnauthorizedException {
-        String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        UserDataAccess userList = new UserDataAccess();
-        AuthDataAccess authList = new AuthDataAccess();
-        UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
-        userList.addUser(user);
-        LoginRequest loginRequest = new LoginRequest(username, password);
-        LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
+        AuthDataAccess authList = getAuthDataAccess();
         ChessGame gameone = new ChessGame();
         ChessGame gametwo = new ChessGame();
         ChessGame gamethree = new ChessGame();
@@ -184,8 +178,23 @@ public class UnitTests {
         gameList.addGame(game1);
         gameList.addGame(game2);
         gameList.addGame(game3);
-        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () -> gameService.listGamesService("ksjdlakjsldgkjslkjs", authList, gameList));
+        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () ->
+                gameService.listGamesService("ksjdlakjsldgkjslkjs", authList, gameList));
         Assertions.assertEquals("Auth token invalid", e.getMessage());
+    }
+
+    private static AuthDataAccess getAuthDataAccess() throws UnauthorizedException {
+        String username = "testusername";
+        String password = "testpassword";
+        String email = "test@email.com";
+        UserDataAccess userList = new UserDataAccess();
+        AuthDataAccess authList = new AuthDataAccess();
+        UserService userService = new UserService();
+        UserData user = new UserData(username, password, email);
+        userList.addUser(user);
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
+        return authList;
     }
 
     @Test
@@ -234,7 +243,8 @@ public class UnitTests {
         GameData game1 = new GameData(1, "whiteguy1", "blackguy1", "firstgame", gameone);
         gameList.addGame(game1);
 
-        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () -> gameService.createGameService(loginResult.authToken(), "firstgame", authList, gameList));
+        UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () ->
+                gameService.createGameService(loginResult.authToken(), "firstgame", authList, gameList));
         Assertions.assertEquals("A game of that name already exists", e.getMessage());
     }
 
@@ -298,7 +308,8 @@ public class UnitTests {
         gameList.addGame(game3);
 
         JoinGameRequest joinGameRequest = new JoinGameRequest(loginResult.authToken(), ChessGame.TeamColor.WHITE, 2);
-        TakenException e = Assertions.assertThrows(TakenException.class, () -> gameService.joinGameService(joinGameRequest, authList, gameList));
+        TakenException e = Assertions.assertThrows(TakenException.class, () ->
+                gameService.joinGameService(joinGameRequest, authList, gameList));
         Assertions.assertEquals("Color isn't available", e.getMessage());
     }
 

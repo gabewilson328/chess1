@@ -136,7 +136,8 @@ public class Server {
             CreateGameRequest preCreateGameRequest = serializer.fromJson(req.body(), CreateGameRequest.class);
             CreateGameRequest createGameRequest = new CreateGameRequest(req.headers("authorization"), preCreateGameRequest.gameName());
             if (createGameRequest.authToken() != null && createGameRequest.gameName() != null) {
-                String result = serializer.toJson(gameService.createGameService(createGameRequest.authToken(), createGameRequest.gameName(), authList, gameList));
+                String result = serializer.toJson(gameService.createGameService(createGameRequest.authToken(),
+                        createGameRequest.gameName(), authList, gameList));
                 res.status(200);
                 res.body(result);
                 return result;
@@ -159,7 +160,8 @@ public class Server {
         var serializer = new Gson();
         try {
             JoinGameRequest preJoinGameRequest = serializer.fromJson(req.body(), JoinGameRequest.class);
-            JoinGameRequest joinGameRequest = new JoinGameRequest(req.headers("authorization"), preJoinGameRequest.playerColor(), preJoinGameRequest.gameID());
+            JoinGameRequest joinGameRequest = new JoinGameRequest(req.headers("authorization"),
+                    preJoinGameRequest.playerColor(), preJoinGameRequest.gameID());
             if (joinGameRequest.authToken() != null && joinGameRequest.playerColor() != null && joinGameRequest.gameID() != null) {
                 gameService.joinGameService(joinGameRequest, authList, gameList);
                 res.status(200);
