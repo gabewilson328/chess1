@@ -234,10 +234,8 @@ public class MoveCalculator {
                 //Capture left
                 if (position.getColumn() > 1) {
                     ChessPosition diagonalLeft = new ChessPosition(position.getRow() + 1, position.getColumn() - 1);
-                    if (board.getPiece(diagonalLeft) != null) {
-                        if (board.getPiece(diagonalLeft).getTeamColor() == ChessGame.TeamColor.BLACK) {
-                            possibleMoves.add(new ChessMove(position, diagonalLeft, null));
-                        }
+                    if (board.getPiece(diagonalLeft) != null && board.getPiece(diagonalLeft).getTeamColor() == ChessGame.TeamColor.BLACK) {
+                        possibleMoves.add(new ChessMove(position, diagonalLeft, null));
                     }
                 }
                 //Capture right
