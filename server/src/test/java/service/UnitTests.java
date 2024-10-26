@@ -102,10 +102,13 @@ public class UnitTests {
         UserService userService = new UserService();
         UserData user = new UserData(username, password, email);
         userList.addUser(user);
+        AuthData userToStay = new AuthData("arandomauthtoken", "otherusername");
+        authList.addAuth(userToStay);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult result = userService.loginService(loginRequest, userList, authList);
         userService.logoutService(result.authToken(), authList);
         Assertions.assertNull(authList.getAuth(result.authToken()));
+        Assertions.assertNotNull(authList.getAuth(userToStay.authToken()));
     }
 
     @Test
