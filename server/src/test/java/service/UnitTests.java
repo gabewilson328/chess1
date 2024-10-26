@@ -302,5 +302,36 @@ public class UnitTests {
         Assertions.assertEquals("Color isn't available", e.getMessage());
     }
 
+    @Test
+    @DisplayName("Clear successful")
+    public void clear() throws UnauthorizedException {
+        String username = "testusername";
+        String password = "testpassword";
+        String email = "test@email.com";
+        UserDataAccess userList = new UserDataAccess();
+        AuthDataAccess authList = new AuthDataAccess();
+        UserService userService = new UserService();
+        UserData user = new UserData(username, password, email);
+        userList.addUser(user);
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
+        ChessGame gameone = new ChessGame();
+        ChessGame gametwo = new ChessGame();
+        ChessGame gamethree = new ChessGame();
+        GameData game1 = new GameData(1, "whiteguy1", "blackguy1", "firstgame", gameone);
+        GameData game2 = new GameData(2, "whiteguy2", "blackguy2", "secondgame", gametwo);
+        GameData game3 = new GameData(3, "whiteguy3", "blackguy3", "thirdgame", gamethree);
+        GameDataAccess gameList = new GameDataAccess();
+        GameService gameService = new GameService();
+        gameList.addGame(game1);
+        gameList.addGame(game2);
+        gameList.addGame(game3);
 
+        ClearService clearService = new ClearService();
+        clearService.clearService(gameList, authList, userList);
+
+        Assertions.assertTrue(gameList.listAllGames().isEmpty());
+        Assertions.assertTrue(authList.listAllAuths().isEmpty());
+        Assertions.assertNull(userList.getUser(username));
+    }
 }

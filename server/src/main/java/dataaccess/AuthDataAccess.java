@@ -29,6 +29,11 @@ public class AuthDataAccess implements AuthDataInterface {
     }
 
     @Override
+    public ArrayList<AuthData> listAllAuths() {
+        return allAuthData;
+    }
+
+    @Override
     public void deleteAuth(String authToken) {
         AuthData datumToDelete = null;
         boolean possible = false;

@@ -60,10 +60,16 @@ public class GameDataAccess implements GameDataInterface {
 
     @Override
     public void joinGameAsColor(ChessGame.TeamColor playerColor, int gameID, String username) {
+        GameData gameToUpdate = null;
+        boolean gameExists = false;
         for (GameData game : games) {
             if (game.gameID() == gameID) {
-                updateGame(game, playerColor, username);
+                gameToUpdate = game;
+                gameExists = true;
             }
+        }
+        if (gameExists) {
+            updateGame(gameToUpdate, playerColor, username);
         }
     }
 
