@@ -35,7 +35,7 @@ public class ChessMove {
 
     @Override
     public int hashCode() {
-        return Objects.hash(startPos ition, endPosition, promotionPiece);
+        return Objects.hash(startPosition, endPosition, promotionPiece);
     }
 
 
