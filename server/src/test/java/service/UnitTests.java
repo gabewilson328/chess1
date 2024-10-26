@@ -327,7 +327,7 @@ public class UnitTests {
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
         ChessGame gameone = new ChessGame();
-        GameData game1 = new GameData(1, "whiteguy1", "blackguy1", "firstgame", gameone);
+        GameData game1 = new GameData(1, "whiteguy", "blackguy", "thegame", gameone);
         GameDataAccess gameList = new GameDataAccess();
         GameService gameService = new GameService();
         gameList.addGame(game1);
