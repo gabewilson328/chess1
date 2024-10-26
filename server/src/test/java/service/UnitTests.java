@@ -103,7 +103,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("Logout successfully")
-    public void logout() {
+    public void logout() throws UnauthorizedException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -112,61 +112,20 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        try {
-            RegisterResult registered = userService.registerService(registerRequest, userList, authList);
-        } catch (Exception e) {
 
-        }
+        RegisterResult registered = userService.registerService(registerRequest, userList, authList);
+
 
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult expectedResult = new LoginResult(fakeAuth, username);
 
-        try {
-            LoginResult result = userService.loginService(loginRequest, userList, authList);
 
-            userService.logoutService(result.authToken(), authList);
-        } catch (Exception e) {
+        LoginResult result = userService.loginService(loginRequest, userList, authList);
 
-        }
+        userService.logoutService(result.authToken(), authList);
 
 
     }
 
-    @DisplayName("List games successfully")
-    public void listGames() {
-        String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        String fakeAuth = "this shouldn't show";
-        RegisterRequest registerRequest = new RegisterRequest(username, password, email);
-        UserDataAccess userList = new UserDataAccess();
-        GameDataAccess gameList = new GameDataAccess();
-        AuthDataAccess authList = new AuthDataAccess();
-        UserService userService = new UserService();
-        GameService gameService = new GameService();
-        try {
-            RegisterResult registered = userService.registerService(registerRequest, userList, authList);
-        } catch (Exception e) {
 
-        }
-
-        LoginRequest loginRequest = new LoginRequest(username, password);
-        LoginResult expectedResult = new LoginResult(fakeAuth, username);
-
-        try {
-            LoginResult result = userService.loginService(loginRequest, userList, authList);
-
-        } catch (Exception e) {
-
-        }
-
-        try {
-            //CreateGameRequest createFirstGameRequest = new CreateGameRequest(loginResult.authToken(), "First game");
-            //CreateGameResult createFirstGameResult = gameService.createGameService(createFirstGameRequest.authToken(), createFirstGameRequest.gameName(), authList, gameList);
-            //CreateGameRequest createSecondGameRequest = new CreateGameRequest(loginResult.authToken(), "First game");
-            //CreateGameResult createSecondGameResult = gameService.createGameService(createSecondGameRequest.authToken(), createSecondGameRequest.gameName(), authList, gameList);
-        } catch (Exception e) {
-
-        }
-    }
 }
