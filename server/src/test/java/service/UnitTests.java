@@ -102,7 +102,8 @@ public class UnitTests {
         UserService userService = new UserService();
         UserData user = new UserData(username, password, email);
         userList.addUser(user);
-        AuthData userToStay = new AuthData("arandomauthtoken", "otherusername");
+        AuthData userToStay = new AuthData(
+                "arandomauthtokentotestifitwilldeleteallofthemorjusttheoneit'ssupposedto", "otherusername");
         authList.addAuth(userToStay);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult result = userService.loginService(loginRequest, userList, authList);
