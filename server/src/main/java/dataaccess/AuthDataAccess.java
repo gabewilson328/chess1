@@ -55,8 +55,12 @@ public class AuthDataAccess implements AuthDataInterface {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AuthDataAccess that = (AuthDataAccess) o;
         return Objects.equals(allAuthData, that.allAuthData);
     }
