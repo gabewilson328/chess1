@@ -4,9 +4,9 @@ import model.UserData;
 import request.LoginRequest;
 
 public interface UserDataInterface {
-    public void addUser(UserData newUser);
+    public void addUser(UserData newUser) throws DataAccessException;
 
-    public UserData getUser(String username);
+    public String getUser(String username);
 
     public boolean verifyPassword(LoginRequest loginRequest);
 

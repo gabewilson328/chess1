@@ -19,10 +19,10 @@ public class UserDataAccess implements UserDataInterface {
     }
 
     @Override
-    public UserData getUser(String username) {
+    public String getUser(String username) {
         for (UserData eachUser : users) {
             if (Objects.equals(eachUser.username(), username)) {
-                return eachUser;
+                return eachUser.username();
             }
         }
         return null;
