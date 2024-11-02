@@ -1,7 +1,9 @@
 package passoff.dataaccess;
 
+import chess.ChessGame;
 import dataaccess.*;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.*;
@@ -234,91 +236,128 @@ public class DatabaseUnitTests {
         String whiteUsername = null;
         String blackUsername = null;
         String gameName = "chess";
-        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        //AuthData auth = new AuthData(username, authToken);
-        //authDataAccess.addAuth(auth);
-        //Assertions.assertEquals(auth, authDataAccess.getAuth(authToken));
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
+        gameDataAccess.addGame(newGame);
+        Assertions.assertEquals(1, gameDataAccess.getGameByName(gameName).gameID());
     }
 
     @Test
     @DisplayName("addGame failed")
     public void addGameFail() throws DataAccessException {
-        String username = "testusername";
-        String authToken = "ajdal;skdjg;alkj";
-        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth = new AuthData(null, username);
+        int gameID = 1;
+        String whiteUsername = null;
+        String blackUsername = null;
+        String gameName = "chess";
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, null);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                authDataAccess.addAuth(auth));
-        Assertions.assertEquals("Could not add authToken", e.getMessage());
+                gameDataAccess.addGame(newGame));
+        Assertions.assertEquals("Could not add game", e.getMessage());
     }
 
     @Test
     @DisplayName("getGame by GameID successful")
     public void getGameByGameID() throws DataAccessException {
-        String username = "testusername";
-        String authToken = "kjdlsks;lgja";
-        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth = new AuthData(username, authToken);
-        authDataAccess.addAuth(auth);
-        Assertions.assertEquals(auth, authDataAccess.getAuth(authToken));
+        int gameID = 1;
+        String whiteUsername = null;
+        String blackUsername = null;
+        String gameName = "chess";
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
+        gameDataAccess.addGame(newGame);
+        Assertions.assertEquals(newGame, gameDataAccess.getGameByID(gameID));
     }
 
     @Test
     @DisplayName("getGame by GameID failed")
     public void getGameByGameIDFail() throws DataAccessException {
-        String username = "testusername";
-        String authToken = "ajdal;skdjg;alkj";
-        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth = new AuthData(authToken, username);
-        authDataAccess.addAuth(auth);
+        int gameID = 1;
+        String whiteUsername = null;
+        String blackUsername = null;
+        String gameName = "chess";
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                authDataAccess.getAuth("wrongusername"));
+                gameDataAccess.getGameByID(2));
         Assertions.assertEquals("Could not get authToken", e.getMessage());
     }
 
+    @Test
+    @DisplayName("getGame by GameName successful")
+    public void getGameByGameName() throws DataAccessException {
+        int gameID = 1;
+        String whiteUsername = null;
+        String blackUsername = null;
+        String gameName = "chess";
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
+        gameDataAccess.addGame(newGame);
+        Assertions.assertEquals(newGame, gameDataAccess.getGameByName(gameName));
+    }
+
+    @Test
+    @DisplayName("getGame by GameName failed")
+    public void getGameByGameNameFail() throws DataAccessException {
+        int gameID = 1;
+        String whiteUsername = null;
+        String blackUsername = null;
+        String gameName = "chess";
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
+        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
+                gameDataAccess.getGameByName("not chess"));
+        Assertions.assertEquals("Could not get authToken", e.getMessage());
+    }
 
     @Test
     @DisplayName("listGames successful")
     public void listGames() throws DataAccessException {
-        String username1 = "testusername1";
-        String authToken1 = "kjdlsks;lgja";
-        String username2 = "testusername2";
-        String authToken2 = "sjadglk;asdg";
-        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth1 = new AuthData(username1, authToken1);
-        AuthData auth2 = new AuthData(username2, authToken2);
-        authDataAccess.addAuth(auth1);
-        authDataAccess.addAuth(auth2);
-        Assertions.assertEquals(2, authDataAccess.listAllAuths().size());
-        Assertions.assertTrue(authDataAccess.listAllAuths().contains(auth1));
-        Assertions.assertTrue(authDataAccess.listAllAuths().contains(auth2));
+        int gameID = 1;
+        String whiteUsername = null;
+        String blackUsername = null;
+        String gameName = "chess";
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
+        gameDataAccess.addGame(newGame);
+        int gameID2 = 2;
+        String whiteUsername2 = null;
+        String blackUsername2 = null;
+        String gameName2 = "chess2";
+        GameData newGame2 = new GameData(gameID2, whiteUsername2, blackUsername2, gameName2, new ChessGame());
+        gameDataAccess.addGame(newGame2);
+        Assertions.assertEquals(2, gameDataAccess.listAllGames().size());
+        Assertions.assertTrue(gameDataAccess.listAllGames().contains(newGame));
+        Assertions.assertTrue(gameDataAccess.listAllGames().contains(newGame2));
     }
 
     @Test
     @DisplayName("listGames failed")
     public void listGamesFail() throws DataAccessException {
-        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                authDataAccess.listAllAuths());
-        Assertions.assertEquals("Could not list authTokens", e.getMessage());
+                gameDataAccess.listAllGames());
+        Assertions.assertEquals("Could not list games", e.getMessage());
     }
 
 
     @Test
-    @DisplayName("deleteGame successful")
-    public void deleteGame() throws DataAccessException {
-        String username = "testusername";
-        String authToken = "kjdlsks;lgja";
-        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth = new AuthData(username, authToken);
-        authDataAccess.addAuth(auth);
-        authDataAccess.deleteAuth(authToken);
-        Assertions.assertNull(authDataAccess.getAuth(authToken));
+    @DisplayName("updateGame successful")
+    public void updateGame() throws DataAccessException {
+        int gameID = 1;
+        String whiteUsername = null;
+        String blackUsername = null;
+        String gameName = "chess";
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
+        gameDataAccess.addGame(newGame);
+        gameDataAccess.updateGame(newGame, ChessGame.TeamColor.WHITE, "myusername");
+        Assertions.assertEquals("myusername", gameDataAccess.getGameByID(1).whiteUsername());
     }
 
     @Test
-    @DisplayName("deleteGame failed")
-    public void deleteGameFail() throws DataAccessException {
+    @DisplayName("updateGame failed")
+    public void updateGameFail() throws DataAccessException {
         String username = "testusername";
         String authToken = "kjdlsks;lgja";
         SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
@@ -332,17 +371,21 @@ public class DatabaseUnitTests {
     @Test
     @DisplayName("clearGames successful")
     public void clearGames() throws DataAccessException {
-        String username1 = "testusername1";
-        String authToken1 = "kjdlsks;lgja";
-        String username2 = "testusername2";
-        String authToken2 = "sjadglk;asdg";
-        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth1 = new AuthData(username1, authToken1);
-        AuthData auth2 = new AuthData(username2, authToken2);
-        authDataAccess.addAuth(auth1);
-        authDataAccess.addAuth(auth2);
-        authDataAccess.deleteAllAuth();
-        Assertions.assertNull(authDataAccess.getAuth(authToken1));
-        Assertions.assertNull(authDataAccess.getAuth(authToken2));
+        int gameID = 1;
+        String whiteUsername = null;
+        String blackUsername = null;
+        String gameName = "chess";
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
+        gameDataAccess.addGame(newGame);
+        int gameID2 = 2;
+        String whiteUsername2 = null;
+        String blackUsername2 = null;
+        String gameName2 = "chess2";
+        GameData newGame2 = new GameData(gameID2, whiteUsername2, blackUsername2, gameName2, new ChessGame());
+        gameDataAccess.addGame(newGame2);
+        gameDataAccess.deleteAllGames();
+        Assertions.assertNull(gameDataAccess.getGameByID(1));
+        Assertions.assertNull(gameDataAccess.getGameByID(2));
     }
 }

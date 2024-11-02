@@ -34,7 +34,7 @@ public class SQLGameDataAccess implements GameDataInterface {
             preparedStatement.setString(1, game);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while adding a game to the database");
+            throw new DataAccessException("Could not add game");
         }
     }
 
@@ -52,7 +52,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while retrieving the game info");
+            throw new DataAccessException("Could not get game");
         }
         return null;
     }
@@ -71,7 +71,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while retrieving the game info");
+            throw new DataAccessException("Could not get game");
         }
         return null;
     }
@@ -89,7 +89,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 return allGames;
             }
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while listing the games");
+            throw new DataAccessException("Could not list games");
         }
     }
 
@@ -102,7 +102,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 preparedStatement.setInt(2, game.gameID());
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {
-                throw new DataAccessException("An error occurred while updating the game");
+                throw new DataAccessException("Could not update game");
             }
         }
         if (color == ChessGame.TeamColor.BLACK) {
@@ -111,7 +111,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 preparedStatement.setInt(2, game.gameID());
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {
-                throw new DataAccessException("An error occurred while updating the game");
+                throw new DataAccessException("Could not update game");
             }
         }
     }
@@ -122,7 +122,7 @@ public class SQLGameDataAccess implements GameDataInterface {
         try (var preparedStatement = conn.prepareStatement("SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games WHERE gameID=?")) {
             preparedStatement.setInt(1, gameID);
             try (var rs = preparedStatement.executeQuery()) {
-                while (rs.next()) {
+                if (rs.next()) {
                     if (gameID == rs.getInt("gameID")) {
                         ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
                         GameData gameToUpdate = new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
@@ -131,7 +131,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while updating the game");
+            throw new DataAccessException("Could not update game");
         }
 
     }
@@ -142,7 +142,7 @@ public class SQLGameDataAccess implements GameDataInterface {
         try (var preparedStatement = conn.prepareStatement("DROP TABLE games")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while deleting the user database");
+            throw new DataAccessException("Could not delete all games");
         }
     }
 
@@ -154,8 +154,7 @@ public class SQLGameDataAccess implements GameDataInterface {
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
               `game` TEXT DEFAULT NOT NULL,
-              PRIMARY KEY (`gameID`),
-              INDEX(gameName)
+              PRIMARY KEY (`gameID`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
