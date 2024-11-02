@@ -29,10 +29,10 @@ public class UserDataAccess implements UserDataInterface {
     }
 
     @Override
-    public boolean verifyPassword(LoginRequest loginRequest) {
+    public boolean verifyPassword(String username, String password) {
         for (UserData eachUser : users) {
-            if (Objects.equals(eachUser.username(), loginRequest.username())) {
-                if (Objects.equals(eachUser.password(), loginRequest.password())) {
+            if (Objects.equals(eachUser.username(), username)) {
+                if (Objects.equals(eachUser.password(), password)) {
                     return true;
                 }
             }

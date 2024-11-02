@@ -18,7 +18,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
     @Override
     public void addAuth(AuthData authData) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("INSERT INTO allAuthData (authToken, username) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+        try (var preparedStatement = conn.prepareStatement("INSERT INTO auths (authToken, username) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, authData.authToken());
             preparedStatement.setString(2, authData.username());
             preparedStatement.executeUpdate();
@@ -30,7 +30,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("SELECT authToken, username FROM allAuthData WHERE authToken=?")) {
+        try (var preparedStatement = conn.prepareStatement("SELECT authToken, username FROM auths WHERE authToken=?")) {
             preparedStatement.setString(1, authToken);
             try (var rs = preparedStatement.executeQuery()) {
                 while (rs.next()) {
@@ -49,7 +49,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
     public ArrayList<AuthData> listAllAuths() throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
         ArrayList<AuthData> allAuths = new ArrayList<>();
-        try (var preparedStatement = conn.prepareStatement("SELECT*FROM allAuthData")) {
+        try (var preparedStatement = conn.prepareStatement("SELECT*FROM auths")) {
             try (var rs = preparedStatement.executeQuery()) {
                 while (rs.next()) {
                     allAuths.add(new AuthData(rs.getString("authToken"), rs.getString("username")));
@@ -64,7 +64,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("DELETE FROM allAuthData WHERE authToken=?")) {
+        try (var preparedStatement = conn.prepareStatement("DELETE FROM auths WHERE authToken=?")) {
             preparedStatement.setString(1, authToken);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -75,7 +75,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
     @Override
     public void deleteAllAuth() throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("DROP TABLE allAuthData")) {
+        try (var preparedStatement = conn.prepareStatement("DROP TABLE auths")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("Could not clear all authTokens");
@@ -84,11 +84,10 @@ public class SQLAuthDataAccess implements AuthDataInterface {
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS  games (
-              `authToken` String NOT NULL,
-              `username` String NOT NULL,
-              PRIMARY KEY (`gameID`),
-              INDEX(username),
+            CREATE TABLE IF NOT EXISTS auths (
+              `authToken` varchar(256) NOT NULL,
+              `username` varchar(256) NOT NULL,
+              PRIMARY KEY (`authToken`),
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };

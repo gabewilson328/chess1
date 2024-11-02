@@ -8,7 +8,7 @@ public interface UserDataInterface {
 
     public String getUser(String username) throws DataAccessException;
 
-    public boolean verifyPassword(LoginRequest loginRequest) throws DataAccessException;
+    public boolean verifyPassword(String username, String password) throws DataAccessException;
 
     public void deleteAllUsers() throws DataAccessException;
 }

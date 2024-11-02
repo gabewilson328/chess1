@@ -21,9 +21,9 @@ public class SQLUserDataAccess implements UserDataInterface {
     @Override
     public void addUser(UserData newUser) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("INSERT INTO users (username, password, email) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+        try (var preparedStatement = conn.prepareStatement("INSERT INTO users (username, password, email) VALUES(?, ?, ?)")) {
             preparedStatement.setString(1, newUser.username());
-            preparedStatement.setString(2, BCrypt.hashpw(newUser.password(), BCrypt.gensalt()));
+            preparedStatement.setString(2, newUser.password());
             preparedStatement.setString(3, newUser.email());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -50,12 +50,13 @@ public class SQLUserDataAccess implements UserDataInterface {
     }
 
     @Override
-    public boolean verifyPassword(LoginRequest loginRequest) throws DataAccessException {
+    public boolean verifyPassword(String username, String hashedPassword) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("SELECT password FROM users WHERE PASSWORD=?")) {
+        try (var preparedStatement = conn.prepareStatement("SELECT password FROM users WHERE username=?")) {
+            preparedStatement.setString(1, username);
             try (var rs = preparedStatement.executeQuery()) {
-                while (rs.next()) {
-                    if (BCrypt.checkpw(loginRequest.password(), rs.getString("password"))) {
+                if (rs.next()) {
+                    if (rs.getString("password").equals(hashedPassword)) {
                         return true;
                     }
                 }
@@ -79,13 +80,11 @@ public class SQLUserDataAccess implements UserDataInterface {
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS  games (
-              `username` String NOT NULL,
-              `password` String NOT NULL,
-              `email` String NOT NULL,
-              PRIMARY KEY (`username`),
-              INDEX(password),
-              INDEX(email)
+            CREATE TABLE IF NOT EXISTS users (
+              `username` varchar(256) NOT NULL,
+              `password` varchar(256) NOT NULL,
+              `email` varchar(256) NOT NULL,
+              PRIMARY KEY (`username`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };

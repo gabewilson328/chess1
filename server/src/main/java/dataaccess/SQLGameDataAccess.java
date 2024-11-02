@@ -150,15 +150,12 @@ public class SQLGameDataAccess implements GameDataInterface {
             """
             CREATE TABLE IF NOT EXISTS  games (
               `gameID` int NOT NULL,
-              `whiteUsername` String NULL,
-              `blackUsername` String NULL,
-              `gameName` String NOT NULL,
+              `whiteUsername` varchar(256),
+              `blackUsername` varchar(256),
+              `gameName` varchar(256) NOT NULL,
               `game` TEXT DEFAULT NOT NULL,
               PRIMARY KEY (`gameID`),
-              INDEX(whiteUsername),
-              INDEX(blackUsername),
-              INDEX(gameName),
-              INDEX(game)
+              INDEX(gameName)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
