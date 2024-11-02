@@ -27,7 +27,7 @@ public class SQLUserDataAccess implements UserDataInterface {
             preparedStatement.setString(3, newUser.email());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while adding a user to the database");
+            throw new DataAccessException("Could not add user");
         }
     }
 
@@ -44,7 +44,7 @@ public class SQLUserDataAccess implements UserDataInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while retrieving the user");
+            throw new DataAccessException("Could not get user");
         }
         return null;
     }
@@ -62,7 +62,7 @@ public class SQLUserDataAccess implements UserDataInterface {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while verifying the password");
+            throw new DataAccessException("Password incorrect");
         }
         return false;
     }
@@ -73,7 +73,7 @@ public class SQLUserDataAccess implements UserDataInterface {
         try (var preparedStatement = conn.prepareStatement("DROP TABLE users")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while deleting the user database");
+            throw new DataAccessException("Could not delete users");
         }
     }
 
