@@ -3,6 +3,7 @@ package dataaccess;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import model.AuthData;
 import model.GameData;
 import request.CreateGameRequest;
@@ -21,16 +22,16 @@ public class SQLGameDataAccess implements GameDataInterface {
     }
 
     @Override
-    public void addGame(GameData game) throws DataAccessException {
+    public void addGame(GameData newGame) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
         try (var preparedStatement = conn.prepareStatement("INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, game) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
-            preparedStatement.setInt(1, game.gameID());
-            preparedStatement.setString(2, game.whiteUsername());
-            preparedStatement.setString(1, game.blackUsername());
-            preparedStatement.setString(2, game.gameName());
+            preparedStatement.setInt(1, newGame.gameID());
+            preparedStatement.setString(2, newGame.whiteUsername());
+            preparedStatement.setString(1, newGame.blackUsername());
+            preparedStatement.setString(2, newGame.gameName());
             var serializer = new Gson();
-            String stringGame = serializer.fromJson(req.body(), ChessGame.class);
-            preparedStatement.setString(1, stringGame);
+            String game = serializer.toJson(newGame.game());
+            preparedStatement.setString(1, game);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("An error occurred while adding a game to the database");

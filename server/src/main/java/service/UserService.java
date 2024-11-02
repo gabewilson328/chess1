@@ -1,8 +1,6 @@
 package service;
 
-import dataaccess.AuthDataAccess;
-import dataaccess.UnauthorizedException;
-import dataaccess.UserDataAccess;
+import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 import request.LoginRequest;
@@ -13,8 +11,8 @@ import result.RegisterResult;
 import java.util.UUID;
 
 public class UserService {
-    public RegisterResult registerService(RegisterRequest registerRequest, UserDataAccess userList,
-                                          AuthDataAccess authList) throws UnauthorizedException {
+    public RegisterResult registerService(RegisterRequest registerRequest, SQLUserDataAccess userList,
+                                          SQLAuthDataAccess authList) throws UnauthorizedException, DataAccessException {
         if (userList.getUser(registerRequest.username()) == null) {
             UserData user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
             userList.addUser(user);
@@ -28,7 +26,7 @@ public class UserService {
         }
     }
 
-    public LoginResult loginService(LoginRequest loginRequest, UserDataAccess userList, AuthDataAccess authList) throws UnauthorizedException {
+    public LoginResult loginService(LoginRequest loginRequest, SQLUserDataAccess userList, SQLAuthDataAccess authList) throws UnauthorizedException, DataAccessException {
         if (userList.getUser(loginRequest.username()) != null && userList.verifyPassword(loginRequest)) {
             String myAuth = UUID.randomUUID().toString();
             AuthData returningUserAuth = new AuthData(myAuth, loginRequest.username());
@@ -40,7 +38,7 @@ public class UserService {
         }
     }
 
-    public void logoutService(String authToken, AuthDataAccess authList) throws UnauthorizedException {
+    public void logoutService(String authToken, SQLAuthDataAccess authList) throws UnauthorizedException, DataAccessException {
         if (authList.getAuth(authToken) != null) {
             authList.deleteAuth(authToken);
         } else {

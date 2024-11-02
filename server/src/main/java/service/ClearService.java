@@ -1,13 +1,9 @@
 package service;
 
-import dataaccess.UserDataAccess;
-import dataaccess.GameDataAccess;
-import dataaccess.AuthDataAccess;
-
-import static dataaccess.DatabaseManager.createDatabase;
+import dataaccess.*;
 
 public class ClearService {
-    public void clearService(GameDataAccess gameList, AuthDataAccess authList, UserDataAccess userList) {
+    public void clearService(SQLGameDataAccess gameList, SQLAuthDataAccess authList, SQLUserDataAccess userList) throws DataAccessException {
         gameList.deleteAllGames();
         authList.deleteAllAuth();
         userList.deleteAllUsers();

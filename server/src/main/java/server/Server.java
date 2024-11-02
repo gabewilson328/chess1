@@ -12,17 +12,17 @@ import spark.*;
 
 public class Server {
 
-    private UserDataAccess userList;
-    private AuthDataAccess authList;
-    private GameDataAccess gameList;
+    private SQLUserDataAccess userList;
+    private SQLAuthDataAccess authList;
+    private SQLGameDataAccess gameList;
     private UserService userService;
     private GameService gameService;
     private ClearService clearService;
 
-    public Server() {
-        userList = new UserDataAccess();
-        authList = new AuthDataAccess();
-        gameList = new GameDataAccess();
+    public Server() throws DataAccessException {
+        userList = new SQLUserDataAccess();
+        authList = new SQLAuthDataAccess();
+        gameList = new SQLGameDataAccess();
         userService = new UserService();
         gameService = new GameService();
         clearService = new ClearService();
