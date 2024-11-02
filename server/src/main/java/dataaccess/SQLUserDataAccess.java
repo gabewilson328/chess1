@@ -80,9 +80,9 @@ public class SQLUserDataAccess implements UserDataInterface {
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS  games (
-              `username` String NULL,
-              `password` String NULL,
-              `email` String NULL,
+              `username` String NOT NULL,
+              `password` String NOT NULL,
+              `email` String NOT NULL,
               PRIMARY KEY (`username`),
               INDEX(password),
               INDEX(email)

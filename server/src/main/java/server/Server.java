@@ -19,13 +19,17 @@ public class Server {
     private GameService gameService;
     private ClearService clearService;
 
-    public Server() throws DataAccessException {
-        userList = new SQLUserDataAccess();
-        authList = new SQLAuthDataAccess();
-        gameList = new SQLGameDataAccess();
-        userService = new UserService();
-        gameService = new GameService();
-        clearService = new ClearService();
+    public Server() {
+        try {
+            userList = new SQLUserDataAccess();
+            authList = new SQLAuthDataAccess();
+            gameList = new SQLGameDataAccess();
+            userService = new UserService();
+            gameService = new GameService();
+            clearService = new ClearService();
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     public int run(int desiredPort) {

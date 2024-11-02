@@ -19,7 +19,7 @@ import result.RegisterResult;
 public class UnitTests {
     @Test
     @DisplayName("Register successful")
-    public void registerUser() throws UnauthorizedException {
+    public void registerUser() throws UnauthorizedException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -54,7 +54,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("Login successful")
-    public void login() throws UnauthorizedException {
+    public void login() throws UnauthorizedException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -89,7 +89,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("Logout successful")
-    public void logout() throws UnauthorizedException {
+    public void logout() throws UnauthorizedException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -110,7 +110,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("Logout failed")
-    public void logoutFail() throws UnauthorizedException {
+    public void logoutFail() throws UnauthorizedException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -128,7 +128,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("List games successful")
-    public void listGames() throws UnauthorizedException {
+    public void listGames() throws UnauthorizedException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -165,7 +165,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("List games failed")
-    public void listGamesFail() throws UnauthorizedException {
+    public void listGamesFail() throws UnauthorizedException, DataAccessException {
         AuthDataAccess authList = getAuthDataAccess();
         ChessGame gameone = new ChessGame();
         ChessGame gametwo = new ChessGame();
@@ -183,7 +183,7 @@ public class UnitTests {
         Assertions.assertEquals("Auth token invalid", e.getMessage());
     }
 
-    private static AuthDataAccess getAuthDataAccess() throws UnauthorizedException {
+    private static AuthDataAccess getAuthDataAccess() throws UnauthorizedException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -199,7 +199,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("Create game successful")
-    public void createGame() throws UnauthorizedException {
+    public void createGame() throws UnauthorizedException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -224,7 +224,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("Create game failed")
-    public void createGameFail() throws UnauthorizedException {
+    public void createGameFail() throws UnauthorizedException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -250,7 +250,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("Join game successful")
-    public void joinGame() throws UnauthorizedException, TakenException {
+    public void joinGame() throws UnauthorizedException, TakenException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -283,7 +283,7 @@ public class UnitTests {
 
     @Test
     @DisplayName("Join game failed")
-    public void joinGameFail() throws UnauthorizedException, TakenException {
+    public void joinGameFail() throws UnauthorizedException, TakenException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
@@ -315,12 +315,12 @@ public class UnitTests {
 
     @Test
     @DisplayName("Clear successful")
-    public void clear() throws UnauthorizedException {
+    public void clear() throws UnauthorizedException, DataAccessException {
         String username = "testusername";
         String password = "testpassword";
         String email = "test@email.com";
-        UserDataAccess userList = new UserDataAccess();
-        AuthDataAccess authList = new AuthDataAccess();
+        UserDataInterface userList = new UserDataAccess();
+        AuthDataInterface authList = new AuthDataAccess();
         UserService userService = new UserService();
         UserData user = new UserData(username, password, email);
         userList.addUser(user);
@@ -328,7 +328,7 @@ public class UnitTests {
         LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
         ChessGame gameone = new ChessGame();
         GameData game1 = new GameData(1, "whiteguy", "blackguy", "thegame", gameone);
-        GameDataAccess gameList = new GameDataAccess();
+        GameDataInterface gameList = new GameDataAccess();
         GameService gameService = new GameService();
         gameList.addGame(game1);
 

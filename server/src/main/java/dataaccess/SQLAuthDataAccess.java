@@ -23,7 +23,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
             preparedStatement.setString(2, authData.username());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while adding a user to the database");
+            throw new DataAccessException("Could not add authToken");
         }
     }
 
@@ -40,7 +40,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while verifying the authToken");
+            throw new DataAccessException("Could not get authToken");
         }
         return null;
     }
@@ -57,7 +57,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
                 return allAuths;
             }
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while listing the authTokens");
+            throw new DataAccessException("Could not list authTokens");
         }
     }
 
@@ -68,7 +68,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
             preparedStatement.setString(1, authToken);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while deleting the authToken");
+            throw new DataAccessException("Could not delete authToken");
         }
     }
 
@@ -78,15 +78,15 @@ public class SQLAuthDataAccess implements AuthDataInterface {
         try (var preparedStatement = conn.prepareStatement("DROP TABLE allAuthData")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("An error occurred while deleting the authToken database");
+            throw new DataAccessException("Could not clear all authTokens");
         }
     }
 
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS  games (
-              `authToken` String NULL,
-              `username` String NULL,
+              `authToken` String NOT NULL,
+              `username` String NOT NULL,
               PRIMARY KEY (`gameID`),
               INDEX(username),
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci

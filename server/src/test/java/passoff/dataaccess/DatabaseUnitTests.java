@@ -31,7 +31,8 @@ public class DatabaseUnitTests {
         String password = "testpassword";
         String email = "test@email.com";
         SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(null, password, email);
+        //something to make it fail
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
                 userDataAccess.addUser(user));
         Assertions.assertEquals("Could not add user", e.getMessage());
@@ -60,7 +61,7 @@ public class DatabaseUnitTests {
         UserData user = new UserData(username, password, email);
         userDataAccess.addUser(user);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                userDataAccess.getUser(username));
+                userDataAccess.getUser("wrongusername"));
         Assertions.assertEquals("Could not get user", e.getMessage());
     }
 
@@ -87,7 +88,7 @@ public class DatabaseUnitTests {
         UserData user = new UserData(username, password, email);
         userDataAccess.addUser(user);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                userDataAccess.verifyPassword(new LoginRequest(username, password)));
+                userDataAccess.verifyPassword(new LoginRequest(username, "wrongpassword")));
         Assertions.assertEquals("Password incorrect", e.getMessage());
     }
 
@@ -111,114 +112,117 @@ public class DatabaseUnitTests {
         String authToken = "kjdlsks;lgja";
         SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
         AuthData auth = new AuthData(username, authToken);
-        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                authDataAccess.addUser(user));
+        authDataAccess.addAuth(auth);
+        Assertions.assertEquals(auth, authDataAccess.getAuth(authToken));
     }
 
     @Test
     @DisplayName("addAuth failed")
     public void addAuthFail() throws DataAccessException {
         String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
+        String authToken = "ajdal;skdjg;alkj";
+        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
+        AuthData auth = new AuthData(authToken, username);
+        //something to make it fail
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                userDataAccess.addUser(user));
-        Assertions.assertEquals("Could not add user", e.getMessage());
+                authDataAccess.addAuth(auth));
+        Assertions.assertEquals("Could not add authToken", e.getMessage());
     }
 
     @Test
     @DisplayName("getAuth successful")
     public void getAuth() throws DataAccessException {
         String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
-        userDataAccess.addUser(user);
-        String gottenUsername = userDataAccess.getUser(username);
-        Assertions.assertEquals(username, gottenUsername);
+        String authToken = "kjdlsks;lgja";
+        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
+        AuthData auth = new AuthData(username, authToken);
+        authDataAccess.addAuth(auth);
+        Assertions.assertEquals(auth, authDataAccess.getAuth(authToken));
     }
 
     @Test
     @DisplayName("getAuth failed")
     public void getAuthFail() throws DataAccessException {
         String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
-        userDataAccess.addUser(user);
+        String authToken = "ajdal;skdjg;alkj";
+        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
+        AuthData auth = new AuthData(authToken, username);
+        authDataAccess.addAuth(auth);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                userDataAccess.getUser(username));
-        Assertions.assertEquals("Could not get user", e.getMessage());
+                authDataAccess.getAuth("wrongusername"));
+        Assertions.assertEquals("Could not get authToken", e.getMessage());
     }
 
     @Test
     @DisplayName("listAuths successful")
     public void listAuths() throws DataAccessException {
-        String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
-        userDataAccess.addUser(user);
-        LoginRequest loginRequest = new LoginRequest(username, password);
-        Assertions.assertTrue(userDataAccess.verifyPassword(loginRequest));
+        String username1 = "testusername1";
+        String authToken1 = "kjdlsks;lgja";
+        String username2 = "testusername2";
+        String authToken2 = "sjadglk;asdg";
+        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
+        AuthData auth1 = new AuthData(username1, authToken1);
+        AuthData auth2 = new AuthData(username2, authToken2);
+        authDataAccess.addAuth(auth1);
+        authDataAccess.addAuth(auth2);
+        Assertions.assertEquals(2, authDataAccess.listAllAuths().size());
+        Assertions.assertTrue(authDataAccess.listAllAuths().contains(auth1));
+        Assertions.assertTrue(authDataAccess.listAllAuths().contains(auth2));
     }
 
     @Test
-    @DisplayName("verifyPassword failed")
+    @DisplayName("listAuths failed")
     public void listAuthsFail() throws DataAccessException {
         String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
-        userDataAccess.addUser(user);
+        String authToken = "ajdal;skdjg;alkj";
+        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
+        AuthData auth = new AuthData(authToken, username);
+        authDataAccess.addAuth(auth);
+        //something to make it fail
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                userDataAccess.verifyPassword(new LoginRequest(username, password)));
-        Assertions.assertEquals("Password incorrect", e.getMessage());
+                authDataAccess.getAuth(""));
+        Assertions.assertEquals("Could not list authTokens", e.getMessage());
     }
 
     @Test
     @DisplayName("deleteAuth successful")
     public void deleteAuth() throws DataAccessException {
         String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
-        userDataAccess.addUser(user);
-        String gottenUsername = userDataAccess.getUser(username);
-        Assertions.assertEquals(username, gottenUsername);
+        String authToken = "kjdlsks;lgja";
+        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
+        AuthData auth = new AuthData(username, authToken);
+        authDataAccess.addAuth(auth);
+        authDataAccess.deleteAuth(authToken);
+        Assertions.assertNull(authDataAccess.getAuth(authToken));
     }
 
     @Test
     @DisplayName("deleteAuth failed")
     public void deleteAuthFail() throws DataAccessException {
         String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
-        userDataAccess.addUser(user);
+        String authToken = "kjdlsks;lgja";
+        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
+        AuthData auth = new AuthData(username, authToken);
+        authDataAccess.addAuth(auth);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                userDataAccess.getUser(username));
-        Assertions.assertEquals("Could not get user", e.getMessage());
+                authDataAccess.deleteAuth("wrongauth"));
+        Assertions.assertEquals("Could not delete authToken", e.getMessage());
     }
 
     @Test
     @DisplayName("clearAuths successful")
     public void clearAuths() throws DataAccessException {
-        String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
-        userDataAccess.addUser(user);
-        userDataAccess.deleteAllUsers();
-        Assertions.assertNull(userDataAccess.getUser(username));
+        String username1 = "testusername1";
+        String authToken1 = "kjdlsks;lgja";
+        String username2 = "testusername2";
+        String authToken2 = "sjadglk;asdg";
+        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
+        AuthData auth1 = new AuthData(username1, authToken1);
+        AuthData auth2 = new AuthData(username2, authToken2);
+        authDataAccess.addAuth(auth1);
+        authDataAccess.addAuth(auth2);
+        authDataAccess.deleteAllAuth();
+        Assertions.assertNull(authDataAccess.getAuth(authToken1));
+        Assertions.assertNull(authDataAccess.getAuth(authToken2));
     }
 }

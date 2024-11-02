@@ -149,11 +149,11 @@ public class SQLGameDataAccess implements GameDataInterface {
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS  games (
-              `gameID` int NULL,
+              `gameID` int NOT NULL,
               `whiteUsername` String NULL,
               `blackUsername` String NULL,
-              `gameName` String NULL,
-              `game` TEXT DEFAULT NULL,
+              `gameName` String NOT NULL,
+              `game` TEXT DEFAULT NOT NULL,
               PRIMARY KEY (`gameID`),
               INDEX(whiteUsername),
               INDEX(blackUsername),

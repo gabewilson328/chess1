@@ -3,6 +3,7 @@ package service;
 import dataaccess.*;
 import model.AuthData;
 import model.UserData;
+import org.eclipse.jetty.server.Authentication;
 import request.LoginRequest;
 import request.RegisterRequest;
 import result.LoginResult;
@@ -11,8 +12,8 @@ import result.RegisterResult;
 import java.util.UUID;
 
 public class UserService {
-    public RegisterResult registerService(RegisterRequest registerRequest, SQLUserDataAccess userList,
-                                          SQLAuthDataAccess authList) throws UnauthorizedException, DataAccessException {
+    public RegisterResult registerService(RegisterRequest registerRequest, UserDataInterface userList,
+                                          AuthDataInterface authList) throws UnauthorizedException, DataAccessException {
         if (userList.getUser(registerRequest.username()) == null) {
             UserData user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
             userList.addUser(user);
@@ -26,7 +27,7 @@ public class UserService {
         }
     }
 
-    public LoginResult loginService(LoginRequest loginRequest, SQLUserDataAccess userList, SQLAuthDataAccess authList) throws UnauthorizedException, DataAccessException {
+    public LoginResult loginService(LoginRequest loginRequest, UserDataInterface userList, AuthDataInterface authList) throws UnauthorizedException, DataAccessException {
         if (userList.getUser(loginRequest.username()) != null && userList.verifyPassword(loginRequest)) {
             String myAuth = UUID.randomUUID().toString();
             AuthData returningUserAuth = new AuthData(myAuth, loginRequest.username());
@@ -38,7 +39,7 @@ public class UserService {
         }
     }
 
-    public void logoutService(String authToken, SQLAuthDataAccess authList) throws UnauthorizedException, DataAccessException {
+    public void logoutService(String authToken, AuthDataInterface authList) throws UnauthorizedException, DataAccessException {
         if (authList.getAuth(authToken) != null) {
             authList.deleteAuth(authToken);
         } else {
