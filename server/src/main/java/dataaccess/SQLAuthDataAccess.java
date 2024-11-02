@@ -11,6 +11,9 @@ import java.util.Objects;
 
 public class SQLAuthDataAccess implements AuthDataInterface {
 
+    public SQLAuthDataAccess() throws DataAccessException {
+        configureDatabase();
+    }
 
     @Override
     public void addAuth(AuthData authData) throws DataAccessException {
@@ -56,7 +59,6 @@ public class SQLAuthDataAccess implements AuthDataInterface {
         } catch (SQLException e) {
             throw new DataAccessException("An error occurred while listing the authTokens");
         }
-        return null;
     }
 
     @Override
@@ -80,5 +82,27 @@ public class SQLAuthDataAccess implements AuthDataInterface {
         }
     }
 
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS  games (
+              `authToken` String NULL,
+              `username` String NULL,
+              PRIMARY KEY (`gameID`),
+              INDEX(username),
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+    };
 
+    private void configureDatabase() throws DataAccessException {
+        DatabaseManager.createDatabase();
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+    }
 }

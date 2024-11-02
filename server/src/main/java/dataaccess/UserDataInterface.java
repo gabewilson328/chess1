@@ -6,9 +6,9 @@ import request.LoginRequest;
 public interface UserDataInterface {
     public void addUser(UserData newUser) throws DataAccessException;
 
-    public String getUser(String username);
+    public String getUser(String username) throws DataAccessException;
 
-    public boolean verifyPassword(LoginRequest loginRequest);
+    public boolean verifyPassword(LoginRequest loginRequest) throws DataAccessException;
 
-    public void deleteAllUsers();
+    public void deleteAllUsers() throws DataAccessException;
 }

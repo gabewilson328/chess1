@@ -13,6 +13,11 @@ import java.util.Objects;
 import static dataaccess.DatabaseManager.getConnection;
 
 public class SQLUserDataAccess implements UserDataInterface {
+
+    public SQLUserDataAccess() throws DataAccessException {
+        configureDatabase();
+    }
+
     @Override
     public void addUser(UserData newUser) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
@@ -69,6 +74,32 @@ public class SQLUserDataAccess implements UserDataInterface {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("An error occurred while deleting the user database");
+        }
+    }
+
+    private final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS  games (
+              `username` String NULL,
+              `password` String NULL,
+              `email` String NULL,
+              PRIMARY KEY (`username`),
+              INDEX(password),
+              INDEX(email)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+    };
+
+    private void configureDatabase() throws DataAccessException {
+        DatabaseManager.createDatabase();
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
 }

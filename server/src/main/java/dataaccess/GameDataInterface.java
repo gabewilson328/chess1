@@ -6,17 +6,17 @@ import model.GameData;
 import java.util.ArrayList;
 
 public interface GameDataInterface {
-    public void addGame(GameData game);
+    public void addGame(GameData game) throws DataAccessException;
 
-    public GameData getGameByName(String gameName);
+    public GameData getGameByName(String gameName) throws DataAccessException;
 
-    public GameData getGameByID(int gameID);
+    public GameData getGameByID(int gameID) throws DataAccessException;
 
-    public ArrayList<GameData> listAllGames();
+    public ArrayList<GameData> listAllGames() throws DataAccessException;
 
-    public void updateGame(GameData game, ChessGame.TeamColor color, String username);
+    public void updateGame(GameData game, ChessGame.TeamColor color, String username) throws DataAccessException;
 
-    public void joinGameAsColor(ChessGame.TeamColor playerColor, int gameID, String username);
+    public void joinGameAsColor(ChessGame.TeamColor playerColor, int gameID, String username) throws DataAccessException;
 
-    public void deleteAllGames();
+    public void deleteAllGames() throws DataAccessException;
 }
