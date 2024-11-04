@@ -108,7 +108,7 @@ public class DatabaseUnitTests {
         String password = "testpassword";
         String email = "test@email.com";
         SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userDataAccess.addUser(user);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
                 userDataAccess.verifyPassword(username, "wrongpassword"));
@@ -294,7 +294,7 @@ public class DatabaseUnitTests {
         GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
                 gameDataAccess.getGameByID(2));
-        Assertions.assertEquals("", e.getMessage());
+        Assertions.assertEquals("Game ID does not exist", e.getMessage());
     }
 
     @Test
@@ -321,7 +321,7 @@ public class DatabaseUnitTests {
         GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
                 gameDataAccess.getGameByName("not chess"));
-        Assertions.assertEquals("Could not get authToken", e.getMessage());
+        Assertions.assertEquals("Game name does not exist", e.getMessage());
     }
 
     @Test
