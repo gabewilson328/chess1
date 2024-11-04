@@ -33,16 +33,15 @@ public class SQLAuthDataAccess implements AuthDataInterface {
         try (var preparedStatement = conn.prepareStatement("SELECT authToken, username FROM auths WHERE authToken=?")) {
             preparedStatement.setString(1, authToken);
             try (var rs = preparedStatement.executeQuery()) {
-                while (rs.next()) {
-                    if (authToken.equals(rs.getString("authToken"))) {
-                        return new AuthData(rs.getString("authToken"), rs.getString("username"));
-                    }
+                if (rs.next()) {
+                    return new AuthData(rs.getString("authToken"), rs.getString("username"));
+                } else {
+                    return null;
                 }
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
-        return null;
     }
 
     @Override
@@ -66,7 +65,10 @@ public class SQLAuthDataAccess implements AuthDataInterface {
         Connection conn = DatabaseManager.getConnection();
         try (var preparedStatement = conn.prepareStatement("DELETE FROM auths WHERE authToken=?")) {
             preparedStatement.setString(1, authToken);
-            preparedStatement.executeUpdate();
+            int rowsDeleted = preparedStatement.executeUpdate();
+            if (rowsDeleted == 0) {
+                throw new DataAccessException("Could not delete auth");
+            }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }

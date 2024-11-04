@@ -38,14 +38,13 @@ public class SQLUserDataAccess implements UserDataInterface {
             try (var rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
                     return username;
+                } else {
+                    return null;
                 }
-            } catch (SQLException e) {
-                throw new DataAccessException(e.getMessage());
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
-        return null;
     }
 
     @Override
@@ -55,11 +54,7 @@ public class SQLUserDataAccess implements UserDataInterface {
             preparedStatement.setString(1, username);
             try (var rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
-                    if (password != null) {
-                        return BCrypt.checkpw(password, rs.getString("password"));
-                    } else {
-                        throw new SQLException("Password is null");
-                    }
+                    return BCrypt.checkpw(password, rs.getString("password"));
                 } else {
                     throw new SQLException("User/password does not exist");
                 }

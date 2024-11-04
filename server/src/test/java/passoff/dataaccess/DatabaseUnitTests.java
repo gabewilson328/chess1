@@ -84,9 +84,7 @@ public class DatabaseUnitTests {
         SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
         UserData user = new UserData(username, password, email);
         userDataAccess.addUser(user);
-        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                userDataAccess.getUser("wrongusername"));
-        Assertions.assertEquals("Could not get user", e.getMessage());
+        Assertions.assertNull(userDataAccess.getUser("wrongusername"));
     }
 
     @Test
@@ -96,9 +94,9 @@ public class DatabaseUnitTests {
         String password = "testpassword";
         String email = "test@email.com";
         SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userDataAccess.addUser(user);
-        Assertions.assertTrue(userDataAccess.verifyPassword(username, BCrypt.hashpw(password, BCrypt.gensalt())));
+        Assertions.assertTrue(userDataAccess.verifyPassword(username, password));
     }
 
     @Test
@@ -110,9 +108,7 @@ public class DatabaseUnitTests {
         SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
         UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userDataAccess.addUser(user);
-        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                userDataAccess.verifyPassword(username, "wrongpassword"));
-        Assertions.assertEquals("Password incorrect", e.getMessage());
+        Assertions.assertFalse(userDataAccess.verifyPassword(username, "wrongpassword"));
     }
 
     @Test
@@ -125,7 +121,7 @@ public class DatabaseUnitTests {
         UserData user = new UserData(username, password, email);
         userDataAccess.addUser(user);
         userDataAccess.deleteAllUsers();
-        Assertions.assertNull(userDataAccess.getUser(username));
+        Assertions.assertNull(userDataAccess.getUser("username"));
     }
 
     @Test
@@ -170,9 +166,7 @@ public class DatabaseUnitTests {
         SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
         AuthData auth = new AuthData(authToken, username);
         authDataAccess.addAuth(auth);
-        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                authDataAccess.getAuth("wrongusername"));
-        Assertions.assertEquals("Could not get authToken", e.getMessage());
+        Assertions.assertNull(authDataAccess.getAuth("wrongusername"));
     }
 
     @Test
@@ -196,9 +190,7 @@ public class DatabaseUnitTests {
     @DisplayName("listAuths failed")
     public void listAuthsFail() throws DataAccessException {
         SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                authDataAccess.listAllAuths());
-        Assertions.assertEquals("Could not list authTokens", e.getMessage());
+        Assertions.assertTrue(authDataAccess.listAllAuths().isEmpty());
     }
 
     @Test
@@ -207,7 +199,7 @@ public class DatabaseUnitTests {
         String username = "testusername";
         String authToken = "kjdlsks;lgja";
         SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth = new AuthData(username, authToken);
+        AuthData auth = new AuthData(authToken, username);
         authDataAccess.addAuth(auth);
         authDataAccess.deleteAuth(authToken);
         Assertions.assertNull(authDataAccess.getAuth(authToken));
@@ -219,11 +211,11 @@ public class DatabaseUnitTests {
         String username = "testusername";
         String authToken = "kjdlsks;lgja";
         SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth = new AuthData(username, authToken);
+        AuthData auth = new AuthData(authToken, username);
         authDataAccess.addAuth(auth);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
                 authDataAccess.deleteAuth("wrongauth"));
-        Assertions.assertEquals("Could not delete authToken", e.getMessage());
+        Assertions.assertEquals("Could not delete auth", e.getMessage());
     }
 
     @Test
@@ -239,8 +231,7 @@ public class DatabaseUnitTests {
         authDataAccess.addAuth(auth1);
         authDataAccess.addAuth(auth2);
         authDataAccess.deleteAllAuth();
-        Assertions.assertNull(authDataAccess.getAuth(authToken1));
-        Assertions.assertNull(authDataAccess.getAuth(authToken2));
+        Assertions.assertTrue(authDataAccess.listAllAuths().isEmpty());
     }
 
     @Test
@@ -267,7 +258,7 @@ public class DatabaseUnitTests {
         GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, null);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
                 gameDataAccess.addGame(newGame));
-        Assertions.assertEquals("Could not add game", e.getMessage());
+        Assertions.assertEquals("Game name and game cannot be null", e.getMessage());
     }
 
     @Test
@@ -319,9 +310,8 @@ public class DatabaseUnitTests {
         String gameName = "chess";
         SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
         GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
-        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                gameDataAccess.getGameByName("not chess"));
-        Assertions.assertEquals("Game name does not exist", e.getMessage());
+        gameDataAccess.addGame(newGame);
+        Assertions.assertNull(gameDataAccess.getGameByName("not chess"));
     }
 
     @Test
@@ -349,9 +339,7 @@ public class DatabaseUnitTests {
     @DisplayName("listGames failed")
     public void listGamesFail() throws DataAccessException {
         SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
-        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                gameDataAccess.listAllGames());
-        Assertions.assertEquals("Could not list games", e.getMessage());
+        Assertions.assertTrue(gameDataAccess.listAllGames().isEmpty());
     }
 
 
@@ -372,25 +360,27 @@ public class DatabaseUnitTests {
     @Test
     @DisplayName("updateGame failed")
     public void updateGameFail() throws DataAccessException {
-        String username = "testusername";
-        String authToken = "kjdlsks;lgja";
-        SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth = new AuthData(username, authToken);
-        authDataAccess.addAuth(auth);
-        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
-                authDataAccess.deleteAuth("wrongauth"));
-        Assertions.assertEquals("Could not delete authToken", e.getMessage());
-    }
-
-    @Test
-    @DisplayName("clearGames successful")
-    public void clearGames() throws DataAccessException {
         int gameID = 1;
         String whiteUsername = null;
         String blackUsername = null;
         String gameName = "chess";
         SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
         GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
+        gameDataAccess.addGame(newGame);
+        DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
+                gameDataAccess.updateGame(newGame, ChessGame.TeamColor.WHITE, null));
+        Assertions.assertEquals("Username cannot be null", e.getMessage());
+    }
+
+    @Test
+    @DisplayName("clearGames successful")
+    public void clearGames() throws DataAccessException {
+        int gameID1 = 1;
+        String whiteUsername1 = null;
+        String blackUsername1 = null;
+        String gameName1 = "chess1";
+        SQLGameDataAccess gameDataAccess = new SQLGameDataAccess();
+        GameData newGame = new GameData(gameID1, whiteUsername1, blackUsername1, gameName1, new ChessGame());
         gameDataAccess.addGame(newGame);
         int gameID2 = 2;
         String whiteUsername2 = null;
@@ -399,7 +389,6 @@ public class DatabaseUnitTests {
         GameData newGame2 = new GameData(gameID2, whiteUsername2, blackUsername2, gameName2, new ChessGame());
         gameDataAccess.addGame(newGame2);
         gameDataAccess.deleteAllGames();
-        Assertions.assertNull(gameDataAccess.getGameByID(1));
-        Assertions.assertNull(gameDataAccess.getGameByID(2));
+        Assertions.assertTrue(gameDataAccess.listAllGames().isEmpty());
     }
 }

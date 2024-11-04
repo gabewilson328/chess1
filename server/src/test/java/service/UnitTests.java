@@ -8,6 +8,7 @@ import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import request.JoinGameRequest;
 import request.LoginRequest;
 import request.RegisterRequest;
@@ -78,7 +79,7 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, "passwordfail");
         UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () ->
@@ -95,7 +96,7 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         AuthData userToStay = new AuthData(
                 "arandomauthtokentotestifitwilldeleteallofthemorjusttheoneit'ssupposedto", "otherusername");
@@ -116,7 +117,7 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult result = userService.loginService(loginRequest, userList, authList);
@@ -134,7 +135,7 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
@@ -165,7 +166,16 @@ public class UnitTests {
     @Test
     @DisplayName("List games failed")
     public void listGamesFail() throws UnauthorizedException, DataAccessException {
-        AuthDataAccess authList = getAuthDataAccess();
+        String username = "testusername";
+        String password = "testpassword";
+        String email = "test@email.com";
+        UserDataAccess userList = new UserDataAccess();
+        AuthDataAccess authList = new AuthDataAccess();
+        UserService userService = new UserService();
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
+        userList.addUser(user);
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        userService.loginService(loginRequest, userList, authList);
         ChessGame gameone = new ChessGame();
         ChessGame gametwo = new ChessGame();
         ChessGame gamethree = new ChessGame();
@@ -205,7 +215,7 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
@@ -230,7 +240,7 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
@@ -289,7 +299,7 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
@@ -321,7 +331,7 @@ public class UnitTests {
         UserDataInterface userList = new UserDataAccess();
         AuthDataInterface authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
+        UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
