@@ -21,7 +21,8 @@ public class SQLGameDataAccess implements GameDataInterface {
         if (newGame.gameName() == null || newGame.game() == null) {
             throw new DataAccessException("Game name and game cannot be null");
         }
-        try (var preparedStatement = conn.prepareStatement("INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, game) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+        try (var preparedStatement = conn.prepareStatement("INSERT INTO games (gameID, whiteUsername, " +
+                "blackUsername, gameName, game) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setInt(1, newGame.gameID());
             preparedStatement.setString(2, newGame.whiteUsername());
             preparedStatement.setString(3, newGame.blackUsername());
@@ -38,12 +39,14 @@ public class SQLGameDataAccess implements GameDataInterface {
     @Override
     public GameData getGameByName(String gameName) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games WHERE gameName=?")) {
+        try (var preparedStatement = conn.prepareStatement("SELECT gameID, whiteUsername, " +
+                "blackUsername, gameName, game FROM games WHERE gameName=?")) {
             preparedStatement.setString(1, gameName);
             try (var rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
                     ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
-                    return new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
+                    return new GameData(rs.getInt("gameID"), rs.getString(
+                            "whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
                 } else {
                     return null;
                 }
@@ -56,14 +59,14 @@ public class SQLGameDataAccess implements GameDataInterface {
     @Override
     public GameData getGameByID(int gameID) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games WHERE gameID=?")) {
+        try (var preparedStatement = conn.prepareStatement("SELECT gameID, whiteUsername, " +
+                "blackUsername, gameName, game FROM games WHERE gameID=?")) {
             preparedStatement.setInt(1, gameID);
             try (var rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
-                    if (gameID == rs.getInt("gameID")) {
-                        ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
-                        return new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
-                    }
+                    ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
+                    return new GameData(rs.getInt("gameID"), rs.getString(
+                            "whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
                 } else {
                     throw new SQLException("Game ID does not exist");
                 }
@@ -71,7 +74,6 @@ public class SQLGameDataAccess implements GameDataInterface {
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
-        return null;
     }
 
     @Override
@@ -82,7 +84,8 @@ public class SQLGameDataAccess implements GameDataInterface {
             try (var rs = preparedStatement.executeQuery()) {
                 while (rs.next()) {
                     ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
-                    allGames.add(new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game));
+                    allGames.add(new GameData(rs.getInt("gameID"), rs.getString(
+                            "whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game));
                 }
                 return allGames;
             }
@@ -96,7 +99,8 @@ public class SQLGameDataAccess implements GameDataInterface {
         Connection conn = DatabaseManager.getConnection();
         if (username != null) {
             if (color == ChessGame.TeamColor.WHITE) {
-                try (var preparedStatement = conn.prepareStatement("UPDATE games SET whiteUsername=? WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
+                try (var preparedStatement = conn.prepareStatement("UPDATE games SET whiteUsername=? " +
+                        "WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
                     preparedStatement.setString(1, username);
                     preparedStatement.setInt(2, game.gameID());
                     preparedStatement.executeUpdate();
@@ -105,7 +109,8 @@ public class SQLGameDataAccess implements GameDataInterface {
                 }
             }
             if (color == ChessGame.TeamColor.BLACK) {
-                try (var preparedStatement = conn.prepareStatement("UPDATE games SET blackUsername=? WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
+                try (var preparedStatement = conn.prepareStatement("UPDATE games SET blackUsername=? " +
+                        "WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
                     preparedStatement.setString(1, username);
                     preparedStatement.setInt(2, game.gameID());
                     preparedStatement.executeUpdate();
@@ -121,13 +126,15 @@ public class SQLGameDataAccess implements GameDataInterface {
     @Override
     public void joinGameAsColor(ChessGame.TeamColor playerColor, int gameID, String username) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games WHERE gameID=?")) {
+        try (var preparedStatement = conn.prepareStatement("SELECT gameID, whiteUsername, " +
+                "blackUsername, gameName, game FROM games WHERE gameID=?")) {
             preparedStatement.setInt(1, gameID);
             try (var rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
                     if (gameID == rs.getInt("gameID")) {
                         ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
-                        GameData gameToUpdate = new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
+                        GameData gameToUpdate = new GameData(rs.getInt("gameID"), rs.getString(
+                                "whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
                         updateGame(gameToUpdate, playerColor, username);
                     }
                 }
@@ -162,15 +169,6 @@ public class SQLGameDataAccess implements GameDataInterface {
     };
 
     private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
-        }
+        DatabaseManager.configureDatabase(createStatements);
     }
 }

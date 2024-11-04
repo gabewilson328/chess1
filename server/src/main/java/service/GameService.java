@@ -8,7 +8,8 @@ import result.CreateGameResult;
 import result.ListGamesResult;
 
 public class GameService {
-    public ListGamesResult listGamesService(String authToken, AuthDataInterface authList, GameDataInterface gameList) throws UnauthorizedException, DataAccessException {
+    public ListGamesResult listGamesService(String authToken, AuthDataInterface authList,
+                                            GameDataInterface gameList) throws UnauthorizedException, DataAccessException {
         if (authList.getAuth(authToken) != null) {
             return new ListGamesResult(gameList.listAllGames());
         } else {

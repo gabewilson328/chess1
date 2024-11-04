@@ -16,7 +16,8 @@ public class UserService {
     public RegisterResult registerService(RegisterRequest registerRequest, UserDataInterface userList,
                                           AuthDataInterface authList) throws UnauthorizedException, DataAccessException {
         if (userList.getUser(registerRequest.username()) == null) {
-            UserData user = new UserData(registerRequest.username(), BCrypt.hashpw(registerRequest.password(), BCrypt.gensalt()), registerRequest.email());
+            UserData user = new UserData(registerRequest.username(),
+                    BCrypt.hashpw(registerRequest.password(), BCrypt.gensalt()), registerRequest.email());
             userList.addUser(user);
             String myAuth = UUID.randomUUID().toString();
             AuthData newUserAuth = new AuthData(myAuth, registerRequest.username());
@@ -28,7 +29,8 @@ public class UserService {
         }
     }
 
-    public LoginResult loginService(LoginRequest loginRequest, UserDataInterface userList, AuthDataInterface authList) throws UnauthorizedException, DataAccessException {
+    public LoginResult loginService(LoginRequest loginRequest,
+                                    UserDataInterface userList, AuthDataInterface authList) throws UnauthorizedException, DataAccessException {
         if (userList.getUser(loginRequest.username()) != null && userList.verifyPassword(loginRequest.username(), loginRequest.password())) {
             String myAuth = UUID.randomUUID().toString();
             AuthData returningUserAuth = new AuthData(myAuth, loginRequest.username());

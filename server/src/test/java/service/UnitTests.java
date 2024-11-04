@@ -192,20 +192,6 @@ public class UnitTests {
         Assertions.assertEquals("Auth token invalid", e.getMessage());
     }
 
-    private static AuthDataAccess getAuthDataAccess() throws UnauthorizedException, DataAccessException {
-        String username = "testusername";
-        String password = "testpassword";
-        String email = "test@email.com";
-        UserDataAccess userList = new UserDataAccess();
-        AuthDataAccess authList = new AuthDataAccess();
-        UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
-        userList.addUser(user);
-        LoginRequest loginRequest = new LoginRequest(username, password);
-        LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
-        return authList;
-    }
-
     @Test
     @DisplayName("Create game successful")
     public void createGame() throws UnauthorizedException, DataAccessException {

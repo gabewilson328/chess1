@@ -147,7 +147,7 @@ public class DatabaseUnitTests {
     @DisplayName("getAuth successful")
     public void getAuth() throws DataAccessException {
         String username = "testusername";
-        String authToken = "kjdlsks;lgja";
+        String authToken = "aksdj;lgaks";
         SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
         AuthData auth = new AuthData(authToken, username);
         authDataAccess.addAuth(auth);
