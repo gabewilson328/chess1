@@ -120,7 +120,7 @@ public class UnitTests {
         UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
-        LoginResult result = userService.loginService(loginRequest, userList, authList);
+        userService.loginService(loginRequest, userList, authList);
         UnauthorizedException e = Assertions.assertThrows(UnauthorizedException.class, () ->
                 userService.logoutService("jsdlgakjsdakjsd;lfkjas", authList));
         Assertions.assertEquals("Auth token does not exist", e.getMessage());
@@ -334,11 +334,10 @@ public class UnitTests {
         UserData user = new UserData(username, BCrypt.hashpw(password, BCrypt.gensalt()), email);
         userList.addUser(user);
         LoginRequest loginRequest = new LoginRequest(username, password);
-        LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
+        userService.loginService(loginRequest, userList, authList);
         ChessGame gameone = new ChessGame();
         GameData game1 = new GameData(1, "whiteguy", "blackguy", "thegame", gameone);
         GameDataInterface gameList = new GameDataAccess();
-        GameService gameService = new GameService();
         gameList.addGame(game1);
 
         ClearService clearService = new ClearService();
