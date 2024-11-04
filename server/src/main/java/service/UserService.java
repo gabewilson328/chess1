@@ -29,7 +29,7 @@ public class UserService {
     }
 
     public LoginResult loginService(LoginRequest loginRequest, UserDataInterface userList, AuthDataInterface authList) throws UnauthorizedException, DataAccessException {
-        if (userList.getUser(loginRequest.username()) != null && userList.verifyPassword(loginRequest.username(), BCrypt.hashpw(loginRequest.password(), BCrypt.gensalt()))) {
+        if (userList.getUser(loginRequest.username()) != null && userList.verifyPassword(loginRequest.username(), loginRequest.password())) {
             String myAuth = UUID.randomUUID().toString();
             AuthData returningUserAuth = new AuthData(myAuth, loginRequest.username());
             authList.addAuth(returningUserAuth);

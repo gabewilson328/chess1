@@ -23,7 +23,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
             preparedStatement.setString(2, authData.username());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Could not add authToken");
+            throw new DataAccessException(e.getMessage());
         }
     }
 
@@ -40,7 +40,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Could not get authToken");
+            throw new DataAccessException(e.getMessage());
         }
         return null;
     }
@@ -57,7 +57,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
                 return allAuths;
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Could not list authTokens");
+            throw new DataAccessException(e.getMessage());
         }
     }
 
@@ -68,17 +68,17 @@ public class SQLAuthDataAccess implements AuthDataInterface {
             preparedStatement.setString(1, authToken);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Could not delete authToken");
+            throw new DataAccessException(e.getMessage());
         }
     }
 
     @Override
     public void deleteAllAuth() throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("DROP TABLE auths")) {
+        try (var preparedStatement = conn.prepareStatement("TRUNCATE TABLE auths")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Could not clear all authTokens");
+            throw new DataAccessException(e.getMessage());
         }
     }
 
@@ -87,8 +87,8 @@ public class SQLAuthDataAccess implements AuthDataInterface {
             CREATE TABLE IF NOT EXISTS auths (
               `authToken` varchar(256) NOT NULL,
               `username` varchar(256) NOT NULL,
-              PRIMARY KEY (`authToken`),
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+              PRIMARY KEY (`authToken`)
+            )
             """
     };
 

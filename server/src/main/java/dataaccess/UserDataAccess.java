@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class UserDataAccess implements UserDataInterface {
     public boolean verifyPassword(String username, String password) {
         for (UserData eachUser : users) {
             if (Objects.equals(eachUser.username(), username)) {
-                if (Objects.equals(eachUser.password(), password)) {
+                if (BCrypt.checkpw(password, eachUser.password())) {
                     return true;
                 }
             }

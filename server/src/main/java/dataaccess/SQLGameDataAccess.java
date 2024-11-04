@@ -27,14 +27,14 @@ public class SQLGameDataAccess implements GameDataInterface {
         try (var preparedStatement = conn.prepareStatement("INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, game) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setInt(1, newGame.gameID());
             preparedStatement.setString(2, newGame.whiteUsername());
-            preparedStatement.setString(1, newGame.blackUsername());
-            preparedStatement.setString(2, newGame.gameName());
+            preparedStatement.setString(3, newGame.blackUsername());
+            preparedStatement.setString(4, newGame.gameName());
             var serializer = new Gson();
             String game = serializer.toJson(newGame.game());
-            preparedStatement.setString(1, game);
+            preparedStatement.setString(5, game);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Could not add game");
+            throw new DataAccessException(e.getMessage());
         }
     }
 
@@ -52,7 +52,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Could not get game");
+            throw new DataAccessException(e.getMessage());
         }
         return null;
     }
@@ -68,10 +68,12 @@ public class SQLGameDataAccess implements GameDataInterface {
                         ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
                         return new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
                     }
+                } else {
+                    throw new SQLException("Game ID does not exist");
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Could not get game");
+            throw new DataAccessException(e.getMessage());
         }
         return null;
     }
@@ -89,7 +91,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 return allGames;
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Could not list games");
+            throw new DataAccessException(e.getMessage());
         }
     }
 
@@ -102,7 +104,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 preparedStatement.setInt(2, game.gameID());
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {
-                throw new DataAccessException("Could not update game");
+                throw new DataAccessException(e.getMessage());
             }
         }
         if (color == ChessGame.TeamColor.BLACK) {
@@ -111,7 +113,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 preparedStatement.setInt(2, game.gameID());
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {
-                throw new DataAccessException("Could not update game");
+                throw new DataAccessException(e.getMessage());
             }
         }
     }
@@ -131,7 +133,7 @@ public class SQLGameDataAccess implements GameDataInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Could not update game");
+            throw new DataAccessException(e.getMessage());
         }
 
     }
@@ -139,10 +141,10 @@ public class SQLGameDataAccess implements GameDataInterface {
     @Override
     public void deleteAllGames() throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("DROP TABLE games")) {
+        try (var preparedStatement = conn.prepareStatement("TRUNCATE TABLE games")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Could not delete all games");
+            throw new DataAccessException(e.getMessage());
         }
     }
 
@@ -153,9 +155,9 @@ public class SQLGameDataAccess implements GameDataInterface {
               `whiteUsername` varchar(256),
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
-              `game` TEXT DEFAULT NOT NULL,
+              `game` TEXT NOT NULL,
               PRIMARY KEY (`gameID`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            )
             """
     };
 

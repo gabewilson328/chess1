@@ -4,7 +4,6 @@ import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 
 import java.util.ArrayList;
@@ -21,49 +20,47 @@ public class SQLUserDataAccess implements UserDataInterface {
     @Override
     public void addUser(UserData newUser) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("INSERT INTO users (username, password, email) VALUES(?, ?, ?)")) {
+        try (var preparedStatement = conn.prepareStatement("INSERT INTO users (username, password, email) VALUES(?, ?, ?);")) {
             preparedStatement.setString(1, newUser.username());
             preparedStatement.setString(2, newUser.password());
             preparedStatement.setString(3, newUser.email());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Could not add user");
+            throw new DataAccessException(e.getMessage());
         }
     }
 
     @Override
     public String getUser(String username) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("SELECT username, email, password FROM users WHERE username=?")) {
+        try (var preparedStatement = conn.prepareStatement("SELECT username, password, email FROM users WHERE username=?;")) {
             preparedStatement.setString(1, username);
             try (var rs = preparedStatement.executeQuery()) {
-                while (rs.next()) {
-                    if (username.equals(rs.getString("username"))) {
-                        return username;
-                    }
+                if (rs.next()) {
+                    return username;
                 }
+            } catch (SQLException e) {
+                throw new DataAccessException(e.getMessage());
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Could not get user");
+            throw new DataAccessException(e.getMessage());
         }
         return null;
     }
 
     @Override
-    public boolean verifyPassword(String username, String hashedPassword) throws DataAccessException {
+    public boolean verifyPassword(String username, String password) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("SELECT password FROM users WHERE username=?")) {
+        try (var preparedStatement = conn.prepareStatement("SELECT password FROM users WHERE username=?;")) {
             preparedStatement.setString(1, username);
             try (var rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
-                    if (rs.getString("password").equals(hashedPassword)) {
-                        return true;
-                    }
+                    BCrypt.checkpw(password, rs.getString("password"));
                 }
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Password incorrect");
+            throw new DataAccessException(e.getMessage());
         }
         return false;
     }
@@ -71,10 +68,10 @@ public class SQLUserDataAccess implements UserDataInterface {
     @Override
     public void deleteAllUsers() throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        try (var preparedStatement = conn.prepareStatement("DROP TABLE users")) {
+        try (var preparedStatement = conn.prepareStatement("TRUNCATE TABLE users;")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Could not delete users");
+            throw new DataAccessException(e.getMessage());
         }
     }
 
@@ -85,7 +82,7 @@ public class SQLUserDataAccess implements UserDataInterface {
               `password` varchar(256) NOT NULL,
               `email` varchar(256) NOT NULL,
               PRIMARY KEY (`username`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            )
             """
     };
 

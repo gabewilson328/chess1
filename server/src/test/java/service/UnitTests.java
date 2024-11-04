@@ -61,8 +61,7 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
-        userList.addUser(user);
+        userService.registerService(new RegisterRequest(username, password, email), userList, authList);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult result = userService.loginService(loginRequest, userList, authList);
         Assertions.assertEquals(username, result.username(), "Username is wrong");
@@ -257,8 +256,8 @@ public class UnitTests {
         UserDataAccess userList = new UserDataAccess();
         AuthDataAccess authList = new AuthDataAccess();
         UserService userService = new UserService();
-        UserData user = new UserData(username, password, email);
-        userList.addUser(user);
+        RegisterRequest registerRequest = new RegisterRequest(username, password, email);
+        userService.registerService(registerRequest, userList, authList);
         LoginRequest loginRequest = new LoginRequest(username, password);
         LoginResult loginResult = userService.loginService(loginRequest, userList, authList);
 

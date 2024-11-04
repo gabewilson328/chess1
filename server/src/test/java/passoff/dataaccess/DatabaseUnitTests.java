@@ -10,6 +10,7 @@ import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import result.LoginResult;
+import service.ClearService;
 
 
 public class DatabaseUnitTests {
@@ -20,6 +21,19 @@ public class DatabaseUnitTests {
             databaseManager.createDatabase();
         } catch (DataAccessException e) {
             new RuntimeException();
+        }
+    }
+
+    @BeforeEach
+    public void clearTables() {
+        try {
+            ClearService clearService = new ClearService();
+            SQLUserDataAccess userList = new SQLUserDataAccess();
+            SQLAuthDataAccess authList = new SQLAuthDataAccess();
+            SQLGameDataAccess gameList = new SQLGameDataAccess();
+            clearService.clearService(gameList, authList, userList);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -45,7 +59,7 @@ public class DatabaseUnitTests {
         UserData user = new UserData(null, password, email);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
                 userDataAccess.addUser(user));
-        Assertions.assertEquals("Could not add user", e.getMessage());
+        Assertions.assertEquals("Column 'username' cannot be null", e.getMessage());
     }
 
     @Test
@@ -120,7 +134,7 @@ public class DatabaseUnitTests {
         String username = "testusername";
         String authToken = "kjdlsks;lgja";
         SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth = new AuthData(username, authToken);
+        AuthData auth = new AuthData(authToken, username);
         authDataAccess.addAuth(auth);
         Assertions.assertEquals(auth, authDataAccess.getAuth(authToken));
     }
@@ -134,7 +148,7 @@ public class DatabaseUnitTests {
         AuthData auth = new AuthData(null, username);
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
                 authDataAccess.addAuth(auth));
-        Assertions.assertEquals("Could not add authToken", e.getMessage());
+        Assertions.assertEquals("Column 'authToken' cannot be null", e.getMessage());
     }
 
     @Test
@@ -143,7 +157,7 @@ public class DatabaseUnitTests {
         String username = "testusername";
         String authToken = "kjdlsks;lgja";
         SQLAuthDataAccess authDataAccess = new SQLAuthDataAccess();
-        AuthData auth = new AuthData(username, authToken);
+        AuthData auth = new AuthData(authToken, username);
         authDataAccess.addAuth(auth);
         Assertions.assertEquals(auth, authDataAccess.getAuth(authToken));
     }
@@ -280,7 +294,7 @@ public class DatabaseUnitTests {
         GameData newGame = new GameData(gameID, whiteUsername, blackUsername, gameName, new ChessGame());
         DataAccessException e = Assertions.assertThrows(DataAccessException.class, () ->
                 gameDataAccess.getGameByID(2));
-        Assertions.assertEquals("Could not get authToken", e.getMessage());
+        Assertions.assertEquals("", e.getMessage());
     }
 
     @Test
