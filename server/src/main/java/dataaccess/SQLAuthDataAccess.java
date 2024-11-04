@@ -1,13 +1,11 @@
 package dataaccess;
 
 import model.AuthData;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class SQLAuthDataAccess implements AuthDataInterface {
 
@@ -48,7 +46,7 @@ public class SQLAuthDataAccess implements AuthDataInterface {
     public ArrayList<AuthData> listAllAuths() throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
         ArrayList<AuthData> allAuths = new ArrayList<>();
-        try (var preparedStatement = conn.prepareStatement("SELECT*FROM auths")) {
+        try (var preparedStatement = conn.prepareStatement("SELECT * FROM auths")) {
             try (var rs = preparedStatement.executeQuery()) {
                 while (rs.next()) {
                     allAuths.add(new AuthData(rs.getString("authToken"), rs.getString("username")));

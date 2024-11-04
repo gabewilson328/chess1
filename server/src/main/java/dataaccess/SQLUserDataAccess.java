@@ -2,14 +2,9 @@ package dataaccess;
 
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
-import request.LoginRequest;
 
 import java.sql.*;
 
-import java.util.ArrayList;
-import java.util.Objects;
-
-import static dataaccess.DatabaseManager.getConnection;
 
 public class SQLUserDataAccess implements UserDataInterface {
 
