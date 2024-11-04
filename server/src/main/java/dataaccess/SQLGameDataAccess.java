@@ -65,8 +65,9 @@ public class SQLGameDataAccess implements GameDataInterface {
             try (var rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
                     ChessGame game = new Gson().fromJson(rs.getString("game"), ChessGame.class);
-                    return new GameData(rs.getInt("gameID"), rs.getString(
+                    GameData gottenGame = new GameData(rs.getInt("gameID"), rs.getString(
                             "whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
+                    return gottenGame;
                 } else {
                     throw new SQLException("Game ID does not exist");
                 }
