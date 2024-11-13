@@ -5,11 +5,13 @@ import model.AuthData;
 import model.GameData;
 import request.*;
 import result.CreateGameResult;
+import result.ErrorResults;
 import result.LoginResult;
 import result.RegisterResult;
 
 import java.io.*;
 import java.net.*;
+import java.util.Objects;
 
 public class ServerFacade {
 
@@ -36,9 +38,9 @@ public class ServerFacade {
 
     public GameData[] listGames(ListGamesRequest listGamesRequest) throws ResponseException {
         var path = "/game";
-        record listGameResponse(GameData[] games) {
+        record ListGameResponse(GameData[] games) {
         }
-        var response = this.makeRequest("GET", path, listGamesRequest, listGamesRequest.authToken(), listGameResponse.class);
+        var response = this.makeRequest("GET", path, listGamesRequest, listGamesRequest.authToken(), ListGameResponse.class);
         return response.games();
     }
 
@@ -66,7 +68,9 @@ public class ServerFacade {
             if (authToken != null) {
                 http.setRequestProperty("Authorization", authToken);
             }
-            writeBody(request, http);
+            if (!Objects.equals(method, "GET")) {
+                writeBody(request, http);
+            }
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
@@ -89,7 +93,11 @@ public class ServerFacade {
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
-            throw new ResponseException(status, "failure: " + status);
+            try (InputStream respBody = http.getErrorStream()) {
+                InputStreamReader reader = new InputStreamReader(respBody);
+                ErrorResults response = new Gson().fromJson(reader, ErrorResults.class);
+                throw new ResponseException(status, "failure: " + status + " " + response.message());
+            }
         }
     }
 

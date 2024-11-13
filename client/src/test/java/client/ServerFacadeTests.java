@@ -56,7 +56,7 @@ public class ServerFacadeTests {
         serverFacade.register(new RegisterRequest("username", "password", "email"));
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.register(new RegisterRequest("username", "password", "email")));
-        Assertions.assertEquals("failure: 403", e.getMessage());
+        Assertions.assertEquals("failure: 403 Error: already taken", e.getMessage());
     }
 
     @Test
@@ -77,7 +77,7 @@ public class ServerFacadeTests {
         serverFacade.logout(new LogoutRequest(registerResult.authToken()));
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.login(new LoginRequest(null, "password")));
-        Assertions.assertEquals("failure: 401", e.getMessage());
+        Assertions.assertEquals("failure: 401 Error: unauthorized", e.getMessage());
     }
 
     @Test
@@ -92,7 +92,7 @@ public class ServerFacadeTests {
     public void logoutFailed() throws ResponseException {
         serverFacade.register(new RegisterRequest("username", "password", "email"));
         ResponseException e = Assertions.assertThrows(ResponseException.class, () -> serverFacade.logout(new LogoutRequest("wrongauth")));
-        Assertions.assertEquals("failure: 401", e.getMessage());
+        Assertions.assertEquals("failure: 401 Error: unauthorized", e.getMessage());
     }
 
     @Test
@@ -123,7 +123,7 @@ public class ServerFacadeTests {
         gameDataAccess.addGame(newGame);
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.listGames(new ListGamesRequest("wrongauth")));
-        Assertions.assertEquals("failure: 400", e.getMessage());
+        Assertions.assertEquals("failure: 401 Error: unauthorized", e.getMessage());
     }
 
     @Test
@@ -148,7 +148,7 @@ public class ServerFacadeTests {
         gameDataAccess.addGame(newGame);
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.createGame(new CreateGameRequest(registerResult.authToken(), gameName)));
-        Assertions.assertEquals("failure: 401", e.getMessage());
+        Assertions.assertEquals("failure: 401 Error: unauthorized", e.getMessage());
     }
 
     @Test
@@ -179,6 +179,6 @@ public class ServerFacadeTests {
         gameDataAccess.addGame(newGame);
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.joinGame(new JoinGameRequest(registerResult.authToken(), ChessGame.TeamColor.WHITE, 1)));
-        Assertions.assertEquals("failure: 403", e.getMessage());
+        Assertions.assertEquals("failure: 403 Error: already taken", e.getMessage());
     }
 }
