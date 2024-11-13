@@ -1,4 +1,4 @@
-package ServerFacade;
+package ui;
 
 public enum State {
     SIGNEDOUT,

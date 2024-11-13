@@ -1,4 +1,4 @@
-package ServerFacade;
+package ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;

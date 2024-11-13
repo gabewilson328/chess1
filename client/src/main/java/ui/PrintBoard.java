@@ -1,4 +1,4 @@
-package ServerFacade;
+package ui;
 
 import chess.ChessGame;
 import chess.ChessPiece;
