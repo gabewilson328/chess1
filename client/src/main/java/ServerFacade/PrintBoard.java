@@ -39,6 +39,7 @@ public class PrintBoard {
         String[] headers = {"a", "b", "c", "d", "e", "f", "g", "h"};
         out.print(SET_BG_COLOR_LIGHT_GREY);
         drawHeaders(out, headers);
+        out.print(RESET_BG_COLOR);
         out.println();
         for (int row = 1; row <= 8; row++) {
             out.print(SET_BG_COLOR_LIGHT_GREY);
@@ -47,6 +48,7 @@ public class PrintBoard {
             out.print(SET_BG_COLOR_LIGHT_GREY);
             out.print(SET_TEXT_COLOR_BLACK);
             out.print(" " + (9 - row) + " ");
+            out.print(RESET_BG_COLOR);
             out.println();
         }
         out.print(SET_BG_COLOR_LIGHT_GREY);
@@ -65,6 +67,7 @@ public class PrintBoard {
             out.print(SET_BG_COLOR_LIGHT_GREY);
             out.print(SET_TEXT_COLOR_BLACK);
             out.print(" " + row + " ");
+            out.print(RESET_BG_COLOR);
             out.println();
         }
         out.print(SET_BG_COLOR_LIGHT_GREY);
