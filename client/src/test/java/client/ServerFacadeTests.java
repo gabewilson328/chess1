@@ -91,18 +91,15 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("Logout")
     public void logout() throws ResponseException {
-        RegisterResult registerResult = serverFacade.register(new RegisterRequest(
-                "username", "password", "email"));
+        RegisterResult registerResult = serverFacade.register(new RegisterRequest("username", "password", "email"));
         Assertions.assertEquals("username", registerResult.username());
     }
 
     @Test
     @DisplayName("Logout failed")
     public void logoutFailed() throws ResponseException {
-        RegisterResult registerResult = serverFacade.register(new RegisterRequest(
-                "username", "password", "email"));
-        ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
-                serverFacade.logout(new LogoutRequest("wrongauth")));
+        serverFacade.register(new RegisterRequest("username", "password", "email"));
+        ResponseException e = Assertions.assertThrows(ResponseException.class, () -> serverFacade.logout(new LogoutRequest("wrongauth")));
         Assertions.assertEquals("Error: unauthorized", e.getMessage());
     }
 
@@ -142,7 +139,7 @@ public class ServerFacadeTests {
     public void createGame() throws ResponseException {
         RegisterResult registerResult = serverFacade.register(new RegisterRequest("username", "password", "email"));
         String gameName = "chess";
-        CreateGameResult createGameResult = serverFacade.createGame(new CreateGameRequest(registerResult.authToken(), gameName)));
+        CreateGameResult createGameResult = serverFacade.createGame(new CreateGameRequest(registerResult.authToken(), gameName));
         Assertions.assertEquals(1, createGameResult.gameID());
     }
 
