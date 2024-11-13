@@ -12,7 +12,7 @@ import static ui.EscapeSequences.*;
 public class PrintBoard {
     public static void printBoard(ChessGame game) {
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-
+        //a change so i can push
         out.print(ERASE_SCREEN);
 
         drawChessBoardFromWhite(out, game);
