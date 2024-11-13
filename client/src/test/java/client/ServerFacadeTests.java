@@ -4,13 +4,10 @@ import ServerFacade.ServerFacade;
 import chess.ChessGame;
 import dataaccess.DataAccessException;
 import dataaccess.SQLGameDataAccess;
-import dataaccess.SQLUserDataAccess;
 import model.GameData;
-import model.UserData;
 import org.junit.jupiter.api.*;
 import request.*;
 import result.CreateGameResult;
-import result.ListGamesResult;
 import result.LoginResult;
 import result.RegisterResult;
 import server.Server;
@@ -20,12 +17,13 @@ import ServerFacade.ResponseException;
 public class ServerFacadeTests {
 
     private static Server server;
-    private static ServerFacade serverFacade = new ServerFacade("http://localhost:8080");
+    private static ServerFacade serverFacade;
 
     @BeforeAll
     public static void init() {
         server = new Server();
         var port = server.run(0);
+        serverFacade = new ServerFacade("http://localhost:" + port);
         System.out.println("Started test HTTP server on " + port);
     }
 
@@ -58,18 +56,15 @@ public class ServerFacadeTests {
         serverFacade.register(new RegisterRequest("username", "password", "email"));
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.register(new RegisterRequest("username", "password", "email")));
-        Assertions.assertEquals("Error: already taken", e.getMessage());
+        Assertions.assertEquals("failure: 403", e.getMessage());
     }
 
     @Test
     @DisplayName("Login")
     public void login() throws ResponseException, DataAccessException {
-        String username = "username";
-        String password = "password";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
-        userDataAccess.addUser(user);
+        RegisterResult registerResult = serverFacade.register(new RegisterRequest(
+                "username", "password", "email"));
+        serverFacade.logout(new LogoutRequest(registerResult.authToken()));
         LoginResult loginResult = serverFacade.login(new LoginRequest("username", "password"));
         Assertions.assertEquals("username", loginResult.username());
     }
@@ -77,22 +72,19 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("Login failed")
     public void loginFailed() throws ResponseException, DataAccessException {
-        String username = "username";
-        String password = "password";
-        String email = "test@email.com";
-        SQLUserDataAccess userDataAccess = new SQLUserDataAccess();
-        UserData user = new UserData(username, password, email);
-        userDataAccess.addUser(user);
+        RegisterResult registerResult = serverFacade.register(new RegisterRequest(
+                "username", "password", "email"));
+        serverFacade.logout(new LogoutRequest(registerResult.authToken()));
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.login(new LoginRequest(null, "password")));
-        Assertions.assertEquals("Error: unauthorized", e.getMessage());
+        Assertions.assertEquals("Failure: 401", e.getMessage());
     }
 
     @Test
     @DisplayName("Logout")
     public void logout() throws ResponseException {
         RegisterResult registerResult = serverFacade.register(new RegisterRequest("username", "password", "email"));
-        Assertions.assertEquals("username", registerResult.username());
+        serverFacade.logout(new LogoutRequest(registerResult.authToken()));
     }
 
     @Test
@@ -100,7 +92,7 @@ public class ServerFacadeTests {
     public void logoutFailed() throws ResponseException {
         serverFacade.register(new RegisterRequest("username", "password", "email"));
         ResponseException e = Assertions.assertThrows(ResponseException.class, () -> serverFacade.logout(new LogoutRequest("wrongauth")));
-        Assertions.assertEquals("Error: unauthorized", e.getMessage());
+        Assertions.assertEquals("Failure: 401", e.getMessage());
     }
 
     @Test
@@ -187,6 +179,6 @@ public class ServerFacadeTests {
         gameDataAccess.addGame(newGame);
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.joinGame(new JoinGameRequest(registerResult.authToken(), ChessGame.TeamColor.WHITE, 1)));
-        Assertions.assertEquals("Color isn't available", e.getMessage());
+        Assertions.assertEquals("failure: 400", e.getMessage());
     }
 }
