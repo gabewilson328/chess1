@@ -1,4 +1,4 @@
-package ui;
+package ServerFacade;
 
 import com.google.gson.Gson;
 import model.AuthData;

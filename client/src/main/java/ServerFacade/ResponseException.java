@@ -1,4 +1,4 @@
-package ui;
+package ServerFacade;
 
 public class ResponseException extends Exception {
 

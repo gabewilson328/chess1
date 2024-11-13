@@ -1,6 +1,6 @@
 import chess.*;
-import ui.PrintBoard;
-import ui.REPL;
+import ServerFacade.PrintBoard;
+import ServerFacade.REPL;
 
 public class Main {
     public static void main(String[] args) {

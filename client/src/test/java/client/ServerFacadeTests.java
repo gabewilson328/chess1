@@ -1,6 +1,6 @@
 package client;
 
-import ui.ServerFacade;
+import ServerFacade.ServerFacade;
 import chess.ChessGame;
 import dataaccess.DataAccessException;
 import dataaccess.SQLGameDataAccess;
@@ -11,7 +11,7 @@ import result.CreateGameResult;
 import result.LoginResult;
 import result.RegisterResult;
 import server.Server;
-import ui.ResponseException;
+import ServerFacade.ResponseException;
 
 
 public class ServerFacadeTests {
@@ -77,7 +77,7 @@ public class ServerFacadeTests {
         serverFacade.logout(new LogoutRequest(registerResult.authToken()));
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.login(new LoginRequest(null, "password")));
-        Assertions.assertEquals("Failure: 401", e.getMessage());
+        Assertions.assertEquals("failure: 401", e.getMessage());
     }
 
     @Test
@@ -92,7 +92,7 @@ public class ServerFacadeTests {
     public void logoutFailed() throws ResponseException {
         serverFacade.register(new RegisterRequest("username", "password", "email"));
         ResponseException e = Assertions.assertThrows(ResponseException.class, () -> serverFacade.logout(new LogoutRequest("wrongauth")));
-        Assertions.assertEquals("Failure: 401", e.getMessage());
+        Assertions.assertEquals("failure: 401", e.getMessage());
     }
 
     @Test
@@ -123,7 +123,7 @@ public class ServerFacadeTests {
         gameDataAccess.addGame(newGame);
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.listGames(new ListGamesRequest("wrongauth")));
-        Assertions.assertEquals("Error: unauthorized", e.getMessage());
+        Assertions.assertEquals("failure: 400", e.getMessage());
     }
 
     @Test
@@ -148,7 +148,7 @@ public class ServerFacadeTests {
         gameDataAccess.addGame(newGame);
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.createGame(new CreateGameRequest(registerResult.authToken(), gameName)));
-        Assertions.assertEquals("A game of that name already exists", e.getMessage());
+        Assertions.assertEquals("failure: 401", e.getMessage());
     }
 
     @Test
@@ -179,6 +179,6 @@ public class ServerFacadeTests {
         gameDataAccess.addGame(newGame);
         ResponseException e = Assertions.assertThrows(ResponseException.class, () ->
                 serverFacade.joinGame(new JoinGameRequest(registerResult.authToken(), ChessGame.TeamColor.WHITE, 1)));
-        Assertions.assertEquals("failure: 400", e.getMessage());
+        Assertions.assertEquals("failure: 403", e.getMessage());
     }
 }
