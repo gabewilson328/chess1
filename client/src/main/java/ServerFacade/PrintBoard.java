@@ -12,10 +12,10 @@ import static ui.EscapeSequences.*;
 public class PrintBoard {
     public static void printBoard(ChessGame game) {
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-        //a change so i can push
         out.print(ERASE_SCREEN);
 
         drawChessBoardFromWhite(out, game);
+        out.print(RESET_BG_COLOR);
         out.println();
         out.println();
 
@@ -23,7 +23,6 @@ public class PrintBoard {
     }
 
     private static void drawHeaders(PrintStream out, String[] headers) {
-        out.print(" ");
         for (int boardCol = 0; boardCol < 8; ++boardCol) {
             drawHeader(out, headers[boardCol]);
         }
@@ -41,13 +40,13 @@ public class PrintBoard {
         drawHeaders(out, headers);
         out.print(RESET_BG_COLOR);
         out.println();
-        for (int row = 1; row <= 8; row++) {
+        for (int row = 8; row >= 1; row--) {
             out.print(SET_BG_COLOR_LIGHT_GREY);
-            out.print(" " + (9 - row) + " ");
-            drawPieces(out, game, row);
+            out.print(" " + row + " ");
+            drawPiecesFromWhite(out, game, row);
             out.print(SET_BG_COLOR_LIGHT_GREY);
             out.print(SET_TEXT_COLOR_BLACK);
-            out.print(" " + (9 - row) + " ");
+            out.print(" " + row + " ");
             out.print(RESET_BG_COLOR);
             out.println();
         }
@@ -59,11 +58,12 @@ public class PrintBoard {
         String[] headers = {"h", "g", "f", "e", "d", "c", "b", "a"};
         out.print(SET_BG_COLOR_LIGHT_GREY);
         drawHeaders(out, headers);
+        out.print(RESET_BG_COLOR);
         out.println();
         for (int row = 1; row <= 8; row++) {
             out.print(SET_BG_COLOR_LIGHT_GREY);
             out.print(" " + row + " ");
-            drawPieces(out, game, row);
+            drawPiecesFromBlack(out, game, row);
             out.print(SET_BG_COLOR_LIGHT_GREY);
             out.print(SET_TEXT_COLOR_BLACK);
             out.print(" " + row + " ");
@@ -74,22 +74,34 @@ public class PrintBoard {
         drawHeaders(out, headers);
     }
 
-    private static void drawPieces(PrintStream out, ChessGame game, int row) {
+    private static void drawPiecesFromWhite(PrintStream out, ChessGame game, int row) {
+        int squareColor = row + 1;
+        for (int col = 8; col >= 1; col--) {
+            squareColor = drawPieces(out, game, row, squareColor, col);
+        }
+    }
+
+    private static void drawPiecesFromBlack(PrintStream out, ChessGame game, int row) {
         int squareColor = row + 1;
         for (int col = 1; col <= 8; col++) {
-            if (squareColor % 2 == 0) {
-                out.print(SET_BG_COLOR_BLACK);
-            } else if (squareColor % 2 == 1) {
-                out.print(SET_BG_COLOR_WHITE);
-            }
-            if (game.getBoard().getPiece(new ChessPosition(row, col)) != null) {
-                out.print(SET_TEXT_COLOR_BLUE);
-                printPlayer(out, game.getBoard().getPiece(new ChessPosition(row, col)));
-            } else {
-                out.print(EMPTY);
-            }
-            squareColor++;
+            squareColor = drawPieces(out, game, row, squareColor, col);
         }
+    }
+
+    private static int drawPieces(PrintStream out, ChessGame game, int row, int squareColor, int col) {
+        if (squareColor % 2 == 0) {
+            out.print(SET_BG_COLOR_BLACK);
+        } else if (squareColor % 2 == 1) {
+            out.print(SET_BG_COLOR_WHITE);
+        }
+        if (game.getBoard().getPiece(new ChessPosition(row, col)) != null) {
+            out.print(SET_TEXT_COLOR_BLUE);
+            printPlayer(out, game.getBoard().getPiece(new ChessPosition(row, col)));
+        } else {
+            out.print(EMPTY);
+        }
+        squareColor++;
+        return squareColor;
     }
 
     private static void printPlayer(PrintStream out, ChessPiece piece) {
