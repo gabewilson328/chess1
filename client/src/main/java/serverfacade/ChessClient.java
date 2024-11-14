@@ -52,9 +52,9 @@ public class ChessClient {
 
     public String register(String... params) throws ResponseException {
         if (params.length == 3) {
-            state = State.SIGNEDIN;
             RegisterResult registerResult = server.register(new RegisterRequest(params[0], params[1], params[2]));
             setUserAuth(registerResult.authToken());
+            state = State.SIGNEDIN;
             return String.format("Logged in as %s", params[0]);
         }
         return "Expected: <username>, <password>, <email>";
@@ -89,10 +89,10 @@ public class ChessClient {
         var result = new StringBuilder();
         var gson = new Gson();
         for (var game : games) {
-            result.append(gson.toJson(game.gameID() + ". " + game.gameName())).append('\n');
+            result.append(gson.toJson(game.gameID() + ". " + game.gameName() + "  WHITE: " + game.whiteUsername() + "  BLACK: " + game.blackUsername())).append('\n');
         }
         return result.toString();
-    } //change to commit
+    }
 
     public String joinGame(String... params) {
         assertSignedIn();
