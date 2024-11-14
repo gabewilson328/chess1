@@ -96,7 +96,7 @@ public class ServerFacade {
             try (InputStream respBody = http.getErrorStream()) {
                 InputStreamReader reader = new InputStreamReader(respBody);
                 ErrorResults response = new Gson().fromJson(reader, ErrorResults.class);
-                throw new ResponseException(status, "failure: " + status + " " + response.message());
+                throw new ResponseException(status, response.message());
             }
         }
     }

@@ -18,21 +18,18 @@ public class GameService {
 
     }
 
-    int gameNumber = 2;
-
     public CreateGameResult createGameService(String authToken, String gameName, AuthDataInterface authList,
                                               GameDataInterface gameList) throws UnauthorizedException, DataAccessException {
         if (authList.getAuth(authToken) != null) {
             if (gameList.getGameByName(gameName) == null) {
                 //get all data including white username and black username, gameName, and create a game
-                int gameID = gameNumber;
                 String whiteUsername = null;
                 String blackUsername = null;
                 ChessGame newGame = new ChessGame();
+                int gameID = gameList.listAllGames().size() + 1;
                 GameData createdGame = new GameData(gameID, whiteUsername, blackUsername, gameName, newGame);
                 gameList.addGame(createdGame);
                 CreateGameResult createdID = new CreateGameResult(gameID);
-                gameNumber++;
                 return createdID;
             } else {
                 throw new UnauthorizedException("A game of that name already exists");

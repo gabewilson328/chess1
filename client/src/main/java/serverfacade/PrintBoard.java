@@ -20,6 +20,9 @@ public class PrintBoard {
         out.println();
 
         drawChessBoardFromBlack(out, game);
+        out.print(RESET_BG_COLOR);
+        out.println();
+        out.println();
     }
 
     private static void drawHeaders(PrintStream out, String[] headers) {
@@ -76,14 +79,14 @@ public class PrintBoard {
 
     private static void drawPiecesFromWhite(PrintStream out, ChessGame game, int row) {
         int squareColor = row + 1;
-        for (int col = 8; col >= 1; col--) {
+        for (int col = 1; col <= 8; col++) {
             squareColor = drawPieces(out, game, row, squareColor, col);
         }
     }
 
     private static void drawPiecesFromBlack(PrintStream out, ChessGame game, int row) {
-        int squareColor = row + 1;
-        for (int col = 1; col <= 8; col++) {
+        int squareColor = row;
+        for (int col = 8; col >= 1; col--) {
             squareColor = drawPieces(out, game, row, squareColor, col);
         }
     }

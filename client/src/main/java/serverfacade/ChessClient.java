@@ -60,12 +60,16 @@ public class ChessClient {
         return "Expected: <username>, <password>, <email>";
     }
 
-    public String login(String... params) throws ResponseException {
+    public String login(String... params) {
         if (params.length == 2) {
-            state = State.SIGNEDIN;
-            LoginResult loginResult = server.login(new LoginRequest(params[0], params[1]));
-            setUserAuth(loginResult.authToken());
-            return String.format("Logged in as %s", params[0]);
+            try {
+                LoginResult loginResult = server.login(new LoginRequest(params[0], params[1]));
+                setUserAuth(loginResult.authToken());
+                state = State.SIGNEDIN;
+                return String.format("Logged in as %s", params[0]);
+            } catch (ResponseException e) {
+                return String.format("Incorrect username or password");
+            }
         }
         return "Expected: <username> <password>";
     }
@@ -74,8 +78,7 @@ public class ChessClient {
         assertSignedIn();
         if (params.length == 1) {
             CreateGameResult createGameResult = server.createGame(new CreateGameRequest(getUserAuth(), params[0]));
-            setGameNumber(createGameResult.gameID());
-            return String.format("Game Number: %s", createGameResult.gameID());
+            return String.format("Game ID: %s", createGameResult.gameID());
         }
         return "Expected: <gameName>";
     }
@@ -96,28 +99,30 @@ public class ChessClient {
         if (params.length == 2) {
             try {
                 var id = Integer.parseInt(params[0]);
-                ChessGame.TeamColor color = null;
+                ChessGame.TeamColor color;
                 if (params[1] != null) {
-                    if (params[1].toUpperCase().equals("WHITE")) {
+                    if (params[1].equalsIgnoreCase("WHITE")) {
                         color = ChessGame.TeamColor.WHITE;
                         server.joinGame(new JoinGameRequest(getUserAuth(), color, id));
                         PrintBoard.printBoard(new ChessGame());
                         return String.format("You have joined the game");
-                    } else if (params[1].toUpperCase().equals("BLACK")) {
+                    } else if (params[1].equalsIgnoreCase("BLACK")) {
                         color = ChessGame.TeamColor.BLACK;
                         server.joinGame(new JoinGameRequest(getUserAuth(), color, id));
                         PrintBoard.printBoard(new ChessGame());
                         return String.format("You have joined the game");
+                    } else {
+                        return String.format("Please choose WHITE or BLACK");
                     }
 
                 }
             } catch (NumberFormatException e) {
-                System.out.print("Invalid game ID");
+                return String.format("Invalid game ID");
             } catch (ResponseException e) {
-                System.out.print("Unsuccessful joining game");
+                return String.format("Unsuccessful joining game");
             }
         }
-        return null;
+        return "";
     }
 
     public String observeGame(String... params) {
@@ -128,10 +133,10 @@ public class ChessClient {
                 //server.joinGame(new JoinGameRequest(getUserAuth(), null, id));
                 PrintBoard.printBoard(new ChessGame());
             } catch (NumberFormatException e) {
-                System.out.println("Invalid game ID");
+                return String.format("Invalid game ID");
             }
         }
-        return null;
+        return String.format("");
     }
 
     public String logout() throws ResponseException {
@@ -173,9 +178,5 @@ public class ChessClient {
 
     private String getUserAuth() {
         return currentAuth;
-    }
-
-    private void setGameNumber(int gameID) {
-        gameIDs.add(gameID);
     }
 }

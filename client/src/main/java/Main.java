@@ -1,4 +1,5 @@
 import chess.*;
+import serverfacade.PrintBoard;
 import serverfacade.REPL;
 
 public class Main {
@@ -6,5 +7,6 @@ public class Main {
         var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
         System.out.println("♕ 240 Chess Client: " + piece);
         new REPL("http://localhost:8080").run();
+        PrintBoard.printBoard(new ChessGame());
     }
 }
