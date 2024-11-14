@@ -1,4 +1,4 @@
-package ServerFacade;
+package serverfacade;
 
 import java.util.Scanner;
 

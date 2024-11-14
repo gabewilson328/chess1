@@ -1,6 +1,6 @@
 package client;
 
-import ServerFacade.ServerFacade;
+import serverfacade.ServerFacade;
 import chess.ChessGame;
 import dataaccess.DataAccessException;
 import dataaccess.SQLGameDataAccess;
@@ -11,7 +11,7 @@ import result.CreateGameResult;
 import result.LoginResult;
 import result.RegisterResult;
 import server.Server;
-import ServerFacade.ResponseException;
+import serverfacade.ResponseException;
 
 
 public class ServerFacadeTests {
