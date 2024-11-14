@@ -73,9 +73,9 @@ public class ChessClient {
     public String createGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
-            CreateGameResult createGameResult = server.createGame(new CreateGameRequest(params[0], getUserAuth()));
+            CreateGameResult createGameResult = server.createGame(new CreateGameRequest(getUserAuth(), params[0]));
             setGameNumber(createGameResult.gameID());
-            return String.format("Game Number: %s");
+            return String.format("Game Number: %s", createGameResult.gameID());
         }
         return "Expected: <gameName>";
     }
