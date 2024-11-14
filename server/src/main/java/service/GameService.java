@@ -18,7 +18,7 @@ public class GameService {
 
     }
 
-    int gameNumber = 1;
+    int gameNumber = 2;
 
     public CreateGameResult createGameService(String authToken, String gameName, AuthDataInterface authList,
                                               GameDataInterface gameList) throws UnauthorizedException, DataAccessException {
