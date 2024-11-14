@@ -86,7 +86,7 @@ public class ChessClient {
         var result = new StringBuilder();
         var gson = new Gson();
         for (var game : games) {
-            result.append(gson.toJson(game)).append('\n');
+            result.append(gson.toJson(game.gameName())).append('\n');
         }
         return result.toString();
     }
