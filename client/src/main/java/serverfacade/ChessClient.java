@@ -92,7 +92,7 @@ public class ChessClient {
             result.append(gson.toJson(game.gameID() + ". " + game.gameName())).append('\n');
         }
         return result.toString();
-    }
+    } //change to commit
 
     public String joinGame(String... params) {
         assertSignedIn();
