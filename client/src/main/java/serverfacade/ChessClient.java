@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import request.*;
 import result.CreateGameResult;
@@ -14,8 +16,9 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
+    private Playing playing = Playing.NOTPLAYING;
     private String currentAuth = null;
-    ArrayList<Integer> gameIDs = new ArrayList<Integer>();
+    private ChessGame currentGame;
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -32,6 +35,15 @@ public class ChessClient {
                     case "register" -> register(params);
                     case "login" -> login(params);
                     case "quit" -> "quit";
+                    default -> help();
+                };
+            } else if (playing == Playing.PLAYING) {
+                return switch (cmd) {
+                    case "redraw" -> redrawBoard();
+                    case "highlight" -> highlightMoves();
+                    case "move" -> makeMove(params);
+                    case "resign" -> resign();
+                    case "leave" -> leave();
                     default -> help();
                 };
             } else {
@@ -147,6 +159,23 @@ public class ChessClient {
         return String.format("Logged out");
     }
 
+    private void redrawBoard() {
+        PrintBoard.printBoard(currentGame);
+    }
+
+    private String highlightMoves(ChessPosition position) {
+        PrintBoard.printHighlightedBoard(currentGame, position);
+    }
+
+    private String makeMove(String[] params) {
+    }
+
+    private String resign() {
+    }
+
+    private String leave() {
+    }
+
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
@@ -155,16 +184,26 @@ public class ChessClient {
                     quit - playing chess
                     help - with possible commands
                     """;
+        } else if (playing == Playing.PLAYING) {
+            return """
+                    redraw - the board
+                    highlight - legal moves
+                    move - a piece
+                    resign - the game
+                    leave - the game
+                    help - with possible commands
+                    """;
+        } else {
+            return """
+                    create <NAME> - a game
+                    list - games
+                    join <ID> [WHITE|BLACK] - a game
+                    observe <ID> - a game
+                    logout - when you are done
+                    quit - playing chess
+                    help - with possible commands
+                    """;
         }
-        return """
-                create <NAME> - a game
-                list - games
-                join <ID> [WHITE|BLACK] - a game
-                observe <ID> - a game
-                logout - when you are done
-                quit - playing chess
-                help - with possible commands
-                """;
     }
 
     private void assertSignedIn() {
@@ -179,5 +218,9 @@ public class ChessClient {
 
     private String getUserAuth() {
         return currentAuth;
+    }
+
+    private void setCurrentGame(ChessGame game) {
+        currentGame = game;
     }
 }
