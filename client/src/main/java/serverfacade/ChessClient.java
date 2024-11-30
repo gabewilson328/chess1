@@ -1,24 +1,31 @@
 package serverfacade;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
+import dataaccess.SQLAuthDataAccess;
+import dataaccess.SQLGameDataAccess;
 import request.*;
 import result.CreateGameResult;
 import result.LoginResult;
 import result.RegisterResult;
+import websocket.WebSocketFacade;
 
 public class ChessClient {
     private final ServerFacade server;
+    private final WebSocketFacade ws;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
     private Playing playing = Playing.NOTPLAYING;
     private String currentAuth = null;
     private ChessGame currentGame;
+    private ChessGame.TeamColor currentColor;
+    private SQLAuthDataAccess authList;
+    private SQLGameDataAccess gameList;
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -112,16 +119,15 @@ public class ChessClient {
         if (params.length == 2) {
             try {
                 var id = Integer.parseInt(params[0]);
-                ChessGame.TeamColor color;
                 if (params[1] != null) {
                     if (params[1].equalsIgnoreCase("WHITE")) {
-                        color = ChessGame.TeamColor.WHITE;
-                        server.joinGame(new JoinGameRequest(getUserAuth(), color, id));
+                        currentColor = ChessGame.TeamColor.WHITE;
+                        server.joinGame(new JoinGameRequest(getUserAuth(), currentColor, id));
                         PrintBoard.printBoard(new ChessGame());
                         return String.format("You have joined the game");
                     } else if (params[1].equalsIgnoreCase("BLACK")) {
-                        color = ChessGame.TeamColor.BLACK;
-                        server.joinGame(new JoinGameRequest(getUserAuth(), color, id));
+                        currentColor = ChessGame.TeamColor.BLACK;
+                        server.joinGame(new JoinGameRequest(getUserAuth(), currentColor, id));
                         PrintBoard.printBoard(new ChessGame());
                         return String.format("You have joined the game");
                     } else {
@@ -159,22 +165,109 @@ public class ChessClient {
         return String.format("Logged out");
     }
 
-    private void redrawBoard() {
+    private String redrawBoard() {
         PrintBoard.printBoard(currentGame);
+        return String.format("");
     }
 
-    private String highlightMoves(ChessPosition position) {
-        PrintBoard.printHighlightedBoard(currentGame, position);
+    private String highlightMoves(String... params) {
+        if (params.length == 1) {
+            try {
+                String[] square = params[0].split("");
+                square[0] = square[0].toLowerCase();
+                int row = Integer.parseInt(square[1]);
+                int col = switch (square[0]) {
+                    case "a" -> 1;
+                    case "b" -> 2;
+                    case "c" -> 3;
+                    case "d" -> 4;
+                    case "e" -> 5;
+                    case "f" -> 6;
+                    case "g" -> 7;
+                    case "h" -> 8;
+                    default -> 0;
+                };
+
+                ChessPosition position = new ChessPosition(row, col);
+                PrintBoard.printHighlightedBoard(currentGame, currentGame.getBoard().getPiece(position), position);
+                return String.format("");
+            } catch (Exception e) {
+                return String.format("Invalid square");
+            }
+        }
+        return String.format("Invalid square");
     }
 
     private String makeMove(String[] params) {
+        if (params.length == 2) {
+            try {
+                String[] startPosition = params[0].split("");
+                startPosition[0] = startPosition[0].toLowerCase();
+                int startRow = Integer.parseInt(startPosition[1]);
+                int startCol = getColumn(startPosition[0]);
+
+                String[] endPosition = params[1].split("");
+                endPosition[0] = endPosition[0].toLowerCase();
+                int endRow = Integer.parseInt(startPosition[1]);
+                int endCol = getColumn(endPosition[0]);
+
+                currentGame.makeMove(new ChessMove(new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), null));
+            } catch (Exception e) {
+                return String.format("Move could not be made");
+            }
+        } else if (params.length == 3) {
+            params[2] = params[2].toLowerCase();
+            try {
+                ChessPiece.PieceType promotionPiece = switch (params[2]) {
+                    case "queen" -> ChessPiece.PieceType.QUEEN;
+                    case "rook", "castle" -> ChessPiece.PieceType.ROOK;
+                    case "bishop" -> ChessPiece.PieceType.BISHOP;
+                    case "knight" -> ChessPiece.PieceType.KNIGHT;
+                    default -> null;
+                };
+                if (promotionPiece == null) {
+                    return String.format("Promotion piece invalid");
+                }
+                String[] startPosition = params[0].split("");
+                startPosition[0] = startPosition[0].toLowerCase();
+                int startRow = Integer.parseInt(startPosition[1]);
+                int startCol = getColumn(startPosition[0]);
+
+                String[] endPosition = params[1].split("");
+                endPosition[0] = endPosition[0].toLowerCase();
+                int endRow = Integer.parseInt(startPosition[1]);
+                int endCol = getColumn(endPosition[0]);
+
+                currentGame.makeMove(new ChessMove(new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), promotionPiece));
+            } catch (Exception e) {
+                return String.format("Move could not be made");
+            }
+        }
+
     }
 
     private String resign() {
     }
 
     private String leave() {
+        try {
+            Send something to the websocket facade to update the game so that the username of that color is null;
+            var ws = new WebSocketFacade(serverUrl, )
+            playing = Playing.NOTPLAYING;
+            return String.format("%s has left the game", authList.getAuth(currentAuth).username());
+        } catch (Exception e) {
+            return String.format("Could not leave game");
+        }
     }
+
+    if (params.length >= 1) {
+        state = State.SIGNEDIN;
+        visitorName = String.join("-", params);
+        ws = new WebSocketFacade(serverUrl, notificationHandler);
+        ws.enterPetShop(visitorName);
+        return String.format("You signed in as %s.", visitorName);
+    }
+        throw new ResponseException(400, "Expected: <yourname>");
 
     public String help() {
         if (state == State.SIGNEDOUT) {
@@ -204,6 +297,21 @@ public class ChessClient {
                     help - with possible commands
                     """;
         }
+    }
+
+    private int getColumn(String column) {
+        int col = switch (column) {
+            case "a" -> 1;
+            case "b" -> 2;
+            case "c" -> 3;
+            case "d" -> 4;
+            case "e" -> 5;
+            case "f" -> 6;
+            case "g" -> 7;
+            case "h" -> 8;
+            default -> 0;
+        };
+        return col;
     }
 
     private void assertSignedIn() {

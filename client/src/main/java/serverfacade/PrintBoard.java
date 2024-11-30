@@ -151,4 +151,9 @@ public class PrintBoard {
             }
         }
     }
+
+    public static void printHighlightedBoard(ChessGame game, ChessPiece piece, ChessPosition position) {
+
+    }
 }
+
