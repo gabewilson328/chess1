@@ -98,29 +98,25 @@ public class SQLGameDataAccess implements GameDataInterface {
     @Override
     public void updateGame(GameData game, ChessGame.TeamColor color, String username) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
-        if (username != null) {
-            if (color == ChessGame.TeamColor.WHITE) {
-                try (var preparedStatement = conn.prepareStatement("UPDATE games SET whiteUsername=? " +
-                        "WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
-                    preparedStatement.setString(1, username);
-                    preparedStatement.setInt(2, game.gameID());
-                    preparedStatement.executeUpdate();
-                } catch (SQLException e) {
-                    throw new DataAccessException(e.getMessage());
-                }
+        if (color == ChessGame.TeamColor.WHITE) {
+            try (var preparedStatement = conn.prepareStatement("UPDATE games SET whiteUsername=? " +
+                    "WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
+                preparedStatement.setString(1, username);
+                preparedStatement.setInt(2, game.gameID());
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                throw new DataAccessException(e.getMessage());
             }
-            if (color == ChessGame.TeamColor.BLACK) {
-                try (var preparedStatement = conn.prepareStatement("UPDATE games SET blackUsername=? " +
-                        "WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
-                    preparedStatement.setString(1, username);
-                    preparedStatement.setInt(2, game.gameID());
-                    preparedStatement.executeUpdate();
-                } catch (SQLException e) {
-                    throw new DataAccessException(e.getMessage());
-                }
+        }
+        if (color == ChessGame.TeamColor.BLACK) {
+            try (var preparedStatement = conn.prepareStatement("UPDATE games SET blackUsername=? " +
+                    "WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
+                preparedStatement.setString(1, username);
+                preparedStatement.setInt(2, game.gameID());
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                throw new DataAccessException(e.getMessage());
             }
-        } else {
-            throw new DataAccessException("Username cannot be null");
         }
     }
 

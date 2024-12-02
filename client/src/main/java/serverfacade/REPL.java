@@ -1,14 +1,17 @@
 package serverfacade;
 
+import websocket.ServerMessageHandler;
+import websocket.messages.ServerMessage;
+
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class REPL {
+public class REPL implements ServerMessageHandler {
     private final ChessClient client;
 
     public REPL(String serverUrl) {
-        client = new ChessClient(serverUrl);
+        client = new ChessClient(serverUrl, this);
     }
 
     public void run() {
@@ -30,6 +33,11 @@ public class REPL {
             }
         }
         System.out.println();
+    }
+
+    public void sendMessage(ServerMessage serverMessage) {
+        System.out.println(SET_TEXT_COLOR_RED + serverMessage.getServerMessageType());
+        printPrompt();
     }
 
     private void printPrompt() {

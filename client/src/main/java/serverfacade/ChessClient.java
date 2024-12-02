@@ -9,27 +9,32 @@ import chess.ChessPosition;
 import com.google.gson.Gson;
 import dataaccess.SQLAuthDataAccess;
 import dataaccess.SQLGameDataAccess;
+import model.GameData;
 import request.*;
 import result.CreateGameResult;
 import result.LoginResult;
 import result.RegisterResult;
+import websocket.ServerMessageHandler;
 import websocket.WebSocketFacade;
 
 public class ChessClient {
     private final ServerFacade server;
-    private final WebSocketFacade ws;
+    private final ServerMessageHandler serverMessageHandler;
     private final String serverUrl;
+    private WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
     private Playing playing = Playing.NOTPLAYING;
     private String currentAuth = null;
     private ChessGame currentGame;
+    private int currentGameID;
     private ChessGame.TeamColor currentColor;
     private SQLAuthDataAccess authList;
     private SQLGameDataAccess gameList;
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl, ServerMessageHandler serverMessageHandler) {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
+        this.serverMessageHandler = serverMessageHandler;
     }
 
     public String eval(String input) {
@@ -119,11 +124,13 @@ public class ChessClient {
         if (params.length == 2) {
             try {
                 var id = Integer.parseInt(params[0]);
+                WebSocketFacade wsfacade = new WebSocketFacade(serverUrl, serverMessageHandler);
                 if (params[1] != null) {
                     if (params[1].equalsIgnoreCase("WHITE")) {
                         currentColor = ChessGame.TeamColor.WHITE;
                         server.joinGame(new JoinGameRequest(getUserAuth(), currentColor, id));
-                        PrintBoard.printBoard(new ChessGame());
+                        wsfacade.connect(getUserAuth(), );
+                        PrintBoard.printBoard(stuff from ws class);
                         return String.format("You have joined the game");
                     } else if (params[1].equalsIgnoreCase("BLACK")) {
                         currentColor = ChessGame.TeamColor.BLACK;
@@ -211,7 +218,10 @@ public class ChessClient {
                 int endRow = Integer.parseInt(startPosition[1]);
                 int endCol = getColumn(endPosition[0]);
 
-                currentGame.makeMove(new ChessMove(new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), null));
+                currentGame.makeMove(new ChessMove(
+                        new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), null));
+                ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+                ws.makeMove(getUserAuth(), object of type ChessMove);
             } catch (Exception e) {
                 return String.format("Move could not be made");
             }
@@ -238,36 +248,34 @@ public class ChessClient {
                 int endRow = Integer.parseInt(startPosition[1]);
                 int endCol = getColumn(endPosition[0]);
 
-                currentGame.makeMove(new ChessMove(new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), promotionPiece));
+                currentGame.makeMove(new ChessMove(
+                        new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), promotionPiece));
+                ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+                ws.makeMove(getUserAuth(), move);
             } catch (Exception e) {
                 return String.format("Move could not be made");
             }
         }
-
+        return String.format("Invalid move");
     }
 
     private String resign() {
+
     }
 
     private String leave() {
         try {
-            Send something to the websocket facade to update the game so that the username of that color is null;
-            var ws = new WebSocketFacade(serverUrl, )
+            Where should I get the game from in order to call updateGame? Can I declare a GameData here in the client when a game is created and then update it in tandem with the real game?
+            GameData gameBeingPlayed = gameList.getGameByID();
+            Send something to the websocketfacade to update the game so that the username of that color is null;
+            ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+            ws.leave(getUserAuth(), );
             playing = Playing.NOTPLAYING;
             return String.format("%s has left the game", authList.getAuth(currentAuth).username());
         } catch (Exception e) {
             return String.format("Could not leave game");
         }
     }
-
-    if (params.length >= 1) {
-        state = State.SIGNEDIN;
-        visitorName = String.join("-", params);
-        ws = new WebSocketFacade(serverUrl, notificationHandler);
-        ws.enterPetShop(visitorName);
-        return String.format("You signed in as %s.", visitorName);
-    }
-        throw new ResponseException(400, "Expected: <yourname>");
 
     public String help() {
         if (state == State.SIGNEDOUT) {
@@ -330,5 +338,13 @@ public class ChessClient {
 
     private void setCurrentGame(ChessGame game) {
         currentGame = game;
+    }
+
+    private void setCurrentGameID(int gameID) {
+        currentGameID = gameID;
+    }
+
+    private int getCurrentGameID() {
+        return currentGameID;2
     }
 }
