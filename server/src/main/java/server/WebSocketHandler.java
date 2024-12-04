@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.SQLGameDataAccess;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import websocket.commands.*;
@@ -12,7 +13,9 @@ import java.io.IOException;
 
 public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
-    private Playing.playing playing;
+    private String currentUsername;
+    private GameStatus gameStatus;
+    private SQLGameDataAccess gameList;
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
@@ -21,39 +24,86 @@ public class WebSocketHandler {
             case CONNECT -> connect(new Gson().fromJson(message, ConnectCommand.class), session);
             case MAKE_MOVE -> makeMove(new Gson().fromJson(message, MakeMoveCommand.class), session);
             case LEAVE -> leave(new Gson().fromJson(message, LeaveCommand.class));
+            case RESIGN -> resign(new Gson().fromJson(message, ResignCommand.class));
         }
     }
 
     private void connect(ConnectCommand connectCommand, Session session) throws IOException {
         connections.add(connectCommand.getUsername(), session);
-        if (connectCommand.getStatus() == playing.PLAYING) {
-            String message = String.format("% is playing as %", connectCommand.getUsername(), connectCommand.);
-            var notification = new NotificationMessage(message);
-            connections.broadcast(connectCommand.getUsername(), notification);
+        if (gameStatus == GameStatus.INPROGRESS) {
+            if (connectCommand.getStatus() == PLAYING) {
+                String message = String.format("%s is playing as %s", connectCommand.getUsername(), connectCommand.getColor());
+                setCurrentUsername(connectCommand.getUsername());
+                var notification = new NotificationMessage(message);
+                connections.broadcast(connectCommand.getUsername(), notification);
+            } else if (connectCommand.getStatus() == OBSERVING) {
+                String message = String.format("%s is now observing", connectCommand.getUsername());
+                setCurrentUsername(connectCommand.getUsername());
+                var notification = new NotificationMessage(message);
+                connections.broadcast(connectCommand.getUsername(), notification);
+            }
+        } else {
+            System.out.println(String.format("You cannot make a move because the game is over"));
         }
     }
 
     private void makeMove(MakeMoveCommand makeMoveCommand, Session session) throws IOException {
-        connections.add(makeMoveCommand, session);
-        var message = String.format("%s is in the shop", visitorName);
-        var notification = new Notification(Notification.Type.ARRIVAL, message);
-        connections.broadcast(visitorName, notification);
-    }
-
-    private void leave(String username) throws IOException {
-        connections.remove(username);
-        var message = String.format("%s left the shop", visitorName);
-        var notification = new Notification(Notification.Type.DEPARTURE, message);
-        connections.broadcast(visitorName, notification);
-    }
-
-    public void resign(String petName, String sound) throws ResponseException {
         try {
-            var message = String.format("%s says %s", petName, sound);
-            var notification = new Notification(Notification.Type.NOISE, message);
-            connections.broadcast("", notification);
-        } catch (Exception ex) {
-            throw new ResponseException(500, ex.getMessage());
+            if (gameStatus == GameStatus.INPROGRESS) {
+                var message = String.format("%s has moved %s to %s", getCurrentUsername(),
+                        makeMoveCommand.getMove().getStartPosition(), makeMoveCommand.getMove().getEndPosition());
+                var load = new LoadMessage(gameList.getGameByID(makeMoveCommand.getGameID()).game());
+                var notification = new NotificationMessage(message);
+                connections.broadcast(null, load);
+                connections.broadcast(getCurrentUsername(), notification);
+            } else {
+                System.out.println(String.format("You cannot make a move because the game is over"));
+            }
+        } catch (Exception e) {
+            var error = new ErrorMessage(String.format("An error occurred when %s attempted a move", getCurrentUsername()));
+            connections.broadcast(getCurrentUsername(), error);
         }
+    }
+
+    private void leave(LeaveCommand leaveCommand) throws IOException {
+        try {
+            connections.remove(getCurrentUsername());
+            var message = String.format("%s left the game", getCurrentUsername());
+            var notification = new NotificationMessage(message);
+            connections.broadcast(getCurrentUsername(), notification);
+            setCurrentUsername(null);
+        } catch (Exception e) {
+            var error = new ErrorMessage(String.format("An error occurred when %s attempted to leave", getCurrentUsername()));
+            connections.broadcast(getCurrentUsername(), error);
+        }
+    }
+
+    public void resign(ResignCommand resignCommand) {
+        try {
+            var message = String.format("%s has resigned. The game is now over", getCurrentUsername());
+            var notification = new NotificationMessage(message);
+            connections.broadcast(getCurrentUsername(), notification);
+            gameStatus = GameStatus.ENDED;
+        } catch (Exception e) {
+            var error = new ErrorMessage(String.format("An error occurred when %s attempted to resign", getCurrentUsername()));
+            try {
+                connections.broadcast(getCurrentUsername(), error);
+            } catch (Exception ex) {
+                System.out.println(String.format("That didn't work"));
+            }
+        }
+    }
+
+    public void setCurrentUsername(String username) {
+        currentUsername = username;
+    }
+
+    public String getCurrentUsername() {
+        return currentUsername;
+    }
+
+    public enum GameStatus {
+        INPROGRESS,
+        ENDED
     }
 }

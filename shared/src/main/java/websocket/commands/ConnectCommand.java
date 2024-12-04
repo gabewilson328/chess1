@@ -24,7 +24,7 @@ public class ConnectCommand extends UserGameCommand {
         return color;
     }
 
-    public Playing.playing getStatus() {
+    public Playing getStatus() {
         return status;
     }
 }

@@ -139,16 +139,15 @@ public class ChessClient {
                     if (params[1].equalsIgnoreCase("WHITE")) {
                         setCurrentColor(ChessGame.TeamColor.WHITE);
                         server.joinGame(new JoinGameRequest(getUserAuth(), getCurrentColor(), id));
-                        playing = Playing.PLAYING;
-                        wsfacade.connect(getUserAuth(), id, , );
+                        wsfacade.connect(getUserAuth(), id, getCurrentUsername(), playing.PLAYING, getCurrentColor());
                         setCurrentGameID(id);
-                        PrintBoard.printBoard(stuff from ws class); I need a loadgame here but not for everybody
+                        PrintBoard.printBoard(stuff from ws class); I need a loadgame here but not for everybody. Or do I? Could I just use GameDataAccess and get the board like that?
                         return String.format("You have joined the game");
                     } else if (params[1].equalsIgnoreCase("BLACK")) {
                         setCurrentColor(ChessGame.TeamColor.BLACK);
                         server.joinGame(new JoinGameRequest(getUserAuth(), getCurrentColor(), id));
                         playing = Playing.PLAYING;
-                        wsfacade.connect(getUserAuth(), id);
+                        wsfacade.connect(getUserAuth(), id, getCurrentUsername(), playing.PLAYING, getCurrentColor());
                         setCurrentGameID(id);
                         PrintBoard.printBoard(stuff from ws class);
                         PrintBoard.printBoard(new ChessGame());
@@ -174,7 +173,7 @@ public class ChessClient {
                 WebSocketFacade wsfacade = new WebSocketFacade(serverUrl, serverMessageHandler);
                 try {
                     var id = Integer.parseInt(params[0]);
-                    wsfacade.connect(getUserAuth(), id);
+                    wsfacade.connect(getUserAuth(), id, getCurrentUsername(), playing.OBSERVING, getCurrentColor());
                     setCurrentGameID(id);
                     playing = Playing.OBSERVING;
                     PrintBoard.printBoard(new ChessGame());
@@ -192,6 +191,7 @@ public class ChessClient {
         assertSignedIn();
         state = State.SIGNEDOUT;
         server.logout(new LogoutRequest(getUserAuth()));
+        setCurrentUsername(null);
         return String.format("Logged out");
     }
 
