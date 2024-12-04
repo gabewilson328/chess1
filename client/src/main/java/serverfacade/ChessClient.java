@@ -1,6 +1,7 @@
 package serverfacade;
 
 import java.util.Arrays;
+import java.util.Scanner;
 
 import chess.ChessGame;
 import chess.ChessMove;
@@ -174,7 +175,6 @@ public class ChessClient {
                     wsfacade.connect(getUserAuth(), id, getCurrentUsername(), playing.OBSERVING, getCurrentColor());
                     setCurrentGameID(id);
                     playing = Playing.OBSERVING;
-                    PrintBoard.printBoard(new ChessGame());
                 } catch (NumberFormatException e) {
                     return String.format("Invalid game ID");
                 }
@@ -278,13 +278,21 @@ public class ChessClient {
     }
 
     private String resign() {
-        try {
-            ws = new WebSocketFacade(serverUrl, serverMessageHandler);
-            ws.resign(getUserAuth(), getCurrentGameID(), getCurrentColor());
-            gameList.updateGameName(getCurrentGameID(), gameList.getGameByID(getCurrentGameID()).gameName() + " - DONE");
-            return String.format("");
-        } catch (Exception e) {
-            return String.format("Unsuccessful resigning");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println(String.format("Are you sure? [YES|NO]"));
+        String line = scanner.nextLine();
+        scanner.close();
+        if (line.equalsIgnoreCase("YES")) {
+            try {
+                ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+                ws.resign(getUserAuth(), getCurrentGameID(), getCurrentColor());
+                gameList.updateGameName(getCurrentGameID(), gameList.getGameByID(getCurrentGameID()).gameName() + " - DONE");
+                return String.format("You have resigned");
+            } catch (Exception e) {
+                return String.format("Unsuccessful resigning");
+            }
+        } else {
+            return String.format("Make sure to be certain if you want to resign");
         }
     }
 

@@ -68,13 +68,13 @@ public class WebSocketHandler {
                 connections.broadcast(getCurrentUsername(), notification);
                 var game = gameList.getGameByID(makeMoveCommand.getGameID()).game();
                 if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
-                    connections.broadcast(null, new NotificationMessage(String.format("WHITE is now in checkmate")));
+                    connections.broadcast(null, new NotificationMessage(String.format("%s is now in checkmate", getCurrentUsername())));
                 } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
-                    connections.broadcast(null, new NotificationMessage(String.format("BLACK is now in checkmate")));
+                    connections.broadcast(null, new NotificationMessage(String.format("%s is now in checkmate", getCurrentUsername())));
                 } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
-                    connections.broadcast(null, new NotificationMessage(String.format("WHITE is now in check")));
+                    connections.broadcast(null, new NotificationMessage(String.format("%s is now in check", getCurrentUsername())));
                 } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
-                    connections.broadcast(null, new NotificationMessage(String.format("BLACK is now in check")));
+                    connections.broadcast(null, new NotificationMessage(String.format("%s is now in check", getCurrentUsername())));
                 } else if (game.allValidMoves(ChessGame.TeamColor.WHITE).isEmpty() && game.allValidMoves(ChessGame.TeamColor.BLACK).isEmpty()) {
                     connections.broadcast(null, new NotificationMessage(String.format("Stalemate has been reached")));
                 }
