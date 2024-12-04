@@ -1,4 +1,4 @@
-package serverfacade;
+package model;
 
 public enum Playing {
     PLAYING,

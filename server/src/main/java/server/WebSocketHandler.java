@@ -7,7 +7,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import websocket.commands.*;
 import websocket.messages.*;
-import serverfacade.Playing;
+import model.Playing;
 
 import java.io.IOException;
 
@@ -32,16 +32,22 @@ public class WebSocketHandler {
     private void connect(ConnectCommand connectCommand, Session session) throws IOException {
         connections.add(connectCommand.getUsername(), session);
         if (gameStatus == GameStatus.INPROGRESS) {
-            if (connectCommand.getStatus() == PLAYING) {
+            if (connectCommand.getStatus() == Playing.PLAYING) {
                 String message = String.format("%s is now playing as %s", connectCommand.getUsername(), connectCommand.getColor());
                 setCurrentUsername(connectCommand.getUsername());
                 var notification = new NotificationMessage(message);
                 connections.broadcast(connectCommand.getUsername(), notification);
-            } else if (connectCommand.getStatus() == OBSERVING) {
+            } else if (connectCommand.getStatus() == Playing.OBSERVING) {
                 String message = String.format("%s is now observing", connectCommand.getUsername());
                 setCurrentUsername(connectCommand.getUsername());
                 var notification = new NotificationMessage(message);
                 connections.broadcast(connectCommand.getUsername(), notification);
+            }
+            try {
+                connections.broadcastToPlayer(connectCommand.getUsername(), new LoadMessage(gameList.getGameByID(connectCommand.getGameID()).game()));
+            } catch (Exception e) {
+                var error = new ErrorMessage(String.format("An error occurred when %s attempted to join", getCurrentUsername()));
+                connections.broadcast(getCurrentUsername(), error);
             }
         } else {
             System.out.println(String.format("You cannot make a move because the game is over"));
@@ -55,6 +61,9 @@ public class WebSocketHandler {
                         makeMoveCommand.getMove().getStartPosition(), makeMoveCommand.getMove().getEndPosition());
                 var load = new LoadMessage(gameList.getGameByID(makeMoveCommand.getGameID()).game());
                 var notification = new NotificationMessage(message);
+
+                call ChessGame.makeMove   Can that just be in the client?
+                        call data access, update in database
                 connections.broadcast(null, load);
                 connections.broadcast(getCurrentUsername(), notification);
                 var game = gameList.getGameByID(makeMoveCommand.getGameID()).game();

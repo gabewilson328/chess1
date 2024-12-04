@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import dataaccess.SQLAuthDataAccess;
 import dataaccess.SQLGameDataAccess;
 import model.GameData;
+import model.Playing;
 import request.*;
 import result.CreateGameResult;
 import result.LoginResult;
@@ -141,7 +142,6 @@ public class ChessClient {
                         server.joinGame(new JoinGameRequest(getUserAuth(), getCurrentColor(), id));
                         wsfacade.connect(getUserAuth(), id, getCurrentUsername(), playing.PLAYING, getCurrentColor());
                         setCurrentGameID(id);
-                        PrintBoard.printBoard(stuff from ws class); I need a loadgame here but not for everybody. Or do I? Could I just use GameDataAccess and get the board like that?
                         return String.format("You have joined the game");
                     } else if (params[1].equalsIgnoreCase("BLACK")) {
                         setCurrentColor(ChessGame.TeamColor.BLACK);
@@ -149,8 +149,6 @@ public class ChessClient {
                         playing = Playing.PLAYING;
                         wsfacade.connect(getUserAuth(), id, getCurrentUsername(), playing.PLAYING, getCurrentColor());
                         setCurrentGameID(id);
-                        PrintBoard.printBoard(stuff from ws class);
-                        PrintBoard.printBoard(new ChessGame());
                         return String.format("You have joined the game");
                     } else {
                         return String.format("Please choose WHITE or BLACK");
@@ -235,7 +233,8 @@ public class ChessClient {
                 int endCol = getColumn(endPosition[0]);
 
                 ChessMove move = new ChessMove(new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), null);
-                currentGame.makeMove(move);
+                currentGame.makeMove(move); is it okay to do this here or does it have to be in the websocket facade?
+                gameList.updateActualGame(getCurrentGameID(), currentGame);
                 ws = new WebSocketFacade(serverUrl, serverMessageHandler);
                 ws.makeMove(getUserAuth(), getCurrentGameID(), move);
 
@@ -268,6 +267,7 @@ public class ChessClient {
                 ChessMove move = new ChessMove(
                         new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), promotionPiece);
                 currentGame.makeMove(move);
+                gameList.updateActualGame(getCurrentGameID(), currentGame);
                 ws = new WebSocketFacade(serverUrl, serverMessageHandler);
                 ws.makeMove(getUserAuth(), getCurrentGameID(), move);
             } catch (Exception e) {
@@ -281,6 +281,7 @@ public class ChessClient {
         try {
             ws = new WebSocketFacade(serverUrl, serverMessageHandler);
             ws.resign(getUserAuth(), getCurrentGameID(), getCurrentColor());
+            gameList.updateGameName(getCurrentGameID(), gameList.getGameByID(getCurrentGameID()).gameName() + " - DONE");
             return String.format("");
         } catch (Exception e) {
             return String.format("Unsuccessful resigning");
@@ -312,8 +313,16 @@ public class ChessClient {
             return """
                     redraw - the board
                     highlight <PIECE_POSITION> - see legal moves
-                    move <CURRENT_POSITION> <NEW_POSITION> <PROMOTION_PIECE> - move a piece
+                    move <CURRENT_POSITION> <NEW_POSITION> - move a piece
+                    move <CURRENT_POSITION> <NEW_POSITION> <PROMOTION_PIECE> - promote a pawn
                     resign - the game
+                    leave - the game
+                    help - with possible commands
+                    """;
+        } else if (playing == Playing.OBSERVING) {
+            return """
+                    redraw - the board
+                    highlight <PIECE_POSITION> - see legal moves
                     leave - the game
                     help - with possible commands
                     """;

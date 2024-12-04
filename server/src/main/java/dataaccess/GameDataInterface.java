@@ -16,6 +16,10 @@ public interface GameDataInterface {
 
     public void updateGame(GameData game, ChessGame.TeamColor color, String username) throws DataAccessException;
 
+    void updateGameName(int gameID, String gameName) throws DataAccessException;
+
+    void updateActualGame(int gameID, ChessGame game) throws DataAccessException;
+
     public void joinGameAsColor(ChessGame.TeamColor playerColor, int gameID, String username) throws DataAccessException;
 
     public void deleteAllGames() throws DataAccessException;

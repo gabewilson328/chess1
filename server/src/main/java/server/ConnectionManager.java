@@ -18,7 +18,7 @@ public class ConnectionManager {
     public void remove(String username) {
         connections.remove(username);
     }
-                                                is just having servermessage here and not the different types okay?
+
     public void broadcast(String excludeUsername, ServerMessage serverMessage) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
@@ -32,6 +32,23 @@ public class ConnectionManager {
         }
 
         // Clean up any connections that were left open.
+        for (var c : removeList) {
+            connections.remove(c.username);
+        }
+    }
+
+    public void broadcastToPlayer(String username, ServerMessage serverMessage) throws IOException {
+        var removeList = new ArrayList<Connection>();
+        for (var c : connections.values()) {
+            if (c.session.isOpen()) {
+                if (c.username.equals(username)) {
+                    c.send(serverMessage.toString());
+                }
+            } else {
+                removeList.add(c);
+            }
+        }
+
         for (var c : removeList) {
             connections.remove(c.username);
         }

@@ -3,7 +3,7 @@ package websocket;
 import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
-import serverfacade.Playing;
+import model.Playing;
 import serverfacade.PrintBoard;
 import serverfacade.ResponseException;
 import websocket.commands.*;
@@ -67,6 +67,7 @@ public class WebSocketFacade extends Endpoint {
         try {
             var command = new ConnectCommand(authToken, gameID, username, status, color);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
+
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
@@ -85,6 +86,7 @@ public class WebSocketFacade extends Endpoint {
         try {
             var command = new LeaveCommand(authToken, gameID, color);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
+            this.session.close();
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }

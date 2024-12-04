@@ -56,6 +56,28 @@ public class GameDataAccess implements GameDataInterface {
             games.remove(game);
         }
     }
+
+    @Override
+    public void updateGameName(int gameID, String gameName) throws DataAccessException {
+        for (GameData game : games) {
+            if (game.gameID() == gameID) {
+                GameData newGame = new GameData(game.gameID(), game.whiteUsername(), game.blackUsername(), gameName, game.game());
+                addGame(newGame);
+                games.remove(game);
+            }
+        }
+    }
+
+    @Override
+    public void updateActualGame(int gameID, ChessGame actualGame) throws DataAccessException {
+        for (GameData game : games) {
+            if (game.gameID() == gameID) {
+                GameData newGame = new GameData(game.gameID(), game.whiteUsername(), game.blackUsername(), game.gameName(), actualGame);
+                addGame(newGame);
+                games.remove(game);
+            }
+        }
+    }
     //create a new game, copy all elements of old game into new game except whiteusername/blackusername, delete old game
 
     @Override

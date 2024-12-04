@@ -193,12 +193,36 @@ public class PrintBoard {
     }
 
     private static void drawHighlightedChessBoardFromBlack(PrintStream out, ChessGame game, ChessPosition position) {
-        
+        String[] headers = {"h", "g", "f", "e", "d", "c", "b", "a"};
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        drawHeaders(out, headers);
+        out.print(RESET_BG_COLOR);
+        out.println();
+        Collection<ChessMove> moves = game.validMoves(position);
+        for (int row = 1; row <= 8; row++) {
+            out.print(SET_BG_COLOR_LIGHT_GREY);
+            out.print(" " + row + " ");
+            drawHighlightedPiecesFromBlack(out, game, row, moves);
+            out.print(SET_BG_COLOR_LIGHT_GREY);
+            out.print(SET_TEXT_COLOR_BLACK);
+            out.print(" " + row + " ");
+            out.print(RESET_BG_COLOR);
+            out.println();
+        }
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        drawHeaders(out, headers);
     }
 
     private static void drawHighlightedPiecesFromWhite(PrintStream out, ChessGame game, int row, Collection<ChessMove> moves) {
         int squareColor = row + 1;
         for (int col = 1; col <= 8; col++) {
+            squareColor = drawHighlightedPieces(out, game, row, squareColor, col, moves);
+        }
+    }
+
+    private static void drawHighlightedPiecesFromBlack(PrintStream out, ChessGame game, int row, Collection<ChessMove> moves) {
+        int squareColor = row;
+        for (int col = 8; col >= 1; col--) {
             squareColor = drawHighlightedPieces(out, game, row, squareColor, col, moves);
         }
     }

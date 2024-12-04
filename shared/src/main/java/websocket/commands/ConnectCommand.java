@@ -1,7 +1,7 @@
 package websocket.commands;
 
 import chess.ChessGame;
-import serverfacade.Playing;
+import model.Playing;
 
 public class ConnectCommand extends UserGameCommand {
 

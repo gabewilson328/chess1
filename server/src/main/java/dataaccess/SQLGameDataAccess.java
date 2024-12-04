@@ -121,6 +121,34 @@ public class SQLGameDataAccess implements GameDataInterface {
     }
 
     @Override
+    public void updateGameName(int gameID, String gameName) throws DataAccessException {
+        Connection conn = DatabaseManager.getConnection();
+        try (var preparedStatement = conn.prepareStatement("UPDATE games SET gameName=? " +
+                "WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
+            preparedStatement.setString(1, gameName);
+            preparedStatement.setInt(2, gameID);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void updateActualGame(int gameID, ChessGame game) throws DataAccessException {
+        Connection conn = DatabaseManager.getConnection();
+        try (var preparedStatement = conn.prepareStatement("UPDATE games SET game=? " +
+                "WHERE gameID=?", Statement.RETURN_GENERATED_KEYS)) {
+            var serializer = new Gson();
+            String gameString = serializer.toJson(game);
+            preparedStatement.setString(1, gameString);
+            preparedStatement.setInt(2, gameID);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    @Override
     public void joinGameAsColor(ChessGame.TeamColor playerColor, int gameID, String username) throws DataAccessException {
         Connection conn = DatabaseManager.getConnection();
         try (var preparedStatement = conn.prepareStatement("SELECT gameID, whiteUsername, " +
