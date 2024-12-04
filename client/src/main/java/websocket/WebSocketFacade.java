@@ -1,10 +1,15 @@
 package websocket;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
+import serverfacade.Playing;
+import serverfacade.PrintBoard;
 import serverfacade.ResponseException;
-import websocket.commands.MakeMoveCommand;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
@@ -17,6 +22,7 @@ public class WebSocketFacade extends Endpoint {
 
     Session session;
     ServerMessageHandler serverMessageHandler;
+    ChessGame storedGame;
 
 
     public WebSocketFacade(String url, ServerMessageHandler serverMessageHandler) throws ResponseException {
@@ -34,11 +40,17 @@ public class WebSocketFacade extends Endpoint {
                 public void onMessage(String message) {
                     ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
                     if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
-                        LoadGameMessage loadgamemessage = new Gson().fromJson(message, LoadGameMessage.class);
-                        store game locally in case of redraw
-                            print board
+                        LoadMessage loadMessage = new Gson().fromJson(message, LoadMessage.class);
+                        PrintBoard.printBoard(loadMessage.getGame());
                     }
-
+                    if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
+                        ErrorMessage errorMessage = new Gson().fromJson(message, ErrorMessage.class);
+                        String.format(errorMessage.getError());
+                    }
+                    if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
+                        NotificationMessage notificationMessage = new Gson().fromJson(message, NotificationMessage.class);
+                        String.format(notificationMessage.getNotification());
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -51,9 +63,9 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void connect(String authToken, int gameID) throws ResponseException {
+    public void connect(String authToken, int gameID, String username, Playing status, ChessGame.TeamColor color) throws ResponseException {
         try {
-            var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            var command = new ConnectCommand(authToken, gameID, username, status, color);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
@@ -64,29 +76,34 @@ public class WebSocketFacade extends Endpoint {
         try {
             var command = new MakeMoveCommand(authToken, gameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
-            this.session.close();
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
     }
 
-    public void leave(String authToken, int gameID) throws ResponseException {
+    public void leave(String authToken, int gameID, ChessGame.TeamColor color) throws ResponseException {
         try {
-
-            var command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+            var command = new LeaveCommand(authToken, gameID, color);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
     }
 
-    public void resign(String authToken, int gameID) throws ResponseException {
+    public void resign(String authToken, int gameID, ChessGame.TeamColor color) throws ResponseException {
         try {
-            var command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+            var command = new ResignCommand(authToken, gameID, color);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
     }
 
+    public void setStoredGame(ChessGame game) {
+        storedGame = game;
+    }
+
+    public ChessGame getStoredGame() {
+        return storedGame;
+    }
 }

@@ -1,11 +1,13 @@
 package serverfacade;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 
 import static ui.EscapeSequences.*;
 
@@ -153,7 +155,90 @@ public class PrintBoard {
     }
 
     public static void printHighlightedBoard(ChessGame game, ChessPiece piece, ChessPosition position) {
+        PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.print(ERASE_SCREEN);
 
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            drawHighlightedChessBoardFromWhite(out, game, position);
+            out.print(RESET_BG_COLOR);
+            out.println();
+            out.println();
+        } else if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+            drawHighlightedChessBoardFromBlack(out, game, position);
+            out.print(RESET_BG_COLOR);
+            out.println();
+            out.println();
+        }
+    }
+
+    private static void drawHighlightedChessBoardFromWhite(PrintStream out, ChessGame game, ChessPosition position) {
+        String[] headers = {"a", "b", "c", "d", "e", "f", "g", "h"};
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        drawHeaders(out, headers);
+        out.print(RESET_BG_COLOR);
+        out.println();
+        Collection<ChessMove> moves = game.validMoves(position);
+        for (int row = 8; row >= 1; row--) {
+            out.print(SET_BG_COLOR_LIGHT_GREY);
+            out.print(" " + row + " ");
+            drawHighlightedPiecesFromWhite(out, game, row, moves);
+            out.print(SET_BG_COLOR_LIGHT_GREY);
+            out.print(SET_TEXT_COLOR_BLACK);
+            out.print(" " + row + " ");
+            out.print(RESET_BG_COLOR);
+            out.println();
+        }
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        drawHeaders(out, headers);
+    }
+
+    private static void drawHighlightedChessBoardFromBlack(PrintStream out, ChessGame game, ChessPosition position) {
+        
+    }
+
+    private static void drawHighlightedPiecesFromWhite(PrintStream out, ChessGame game, int row, Collection<ChessMove> moves) {
+        int squareColor = row + 1;
+        for (int col = 1; col <= 8; col++) {
+            squareColor = drawHighlightedPieces(out, game, row, squareColor, col, moves);
+        }
+    }
+
+    private static int drawHighlightedPieces(PrintStream out, ChessGame game, int row, int squareColor, int col, Collection<ChessMove> moves) {
+        for (ChessMove aMove : moves) {
+            if (aMove.getEndPosition().getRow() == row && aMove.getEndPosition().getColumn() == col) {
+                if (squareColor % 2 == 0) {
+                    out.print(SET_BG_COLOR_DARK_GREEN);
+                } else if (squareColor % 2 == 1) {
+                    out.print(SET_BG_COLOR_GREEN);
+                }
+                if (game.getBoard().getPiece(new ChessPosition(row, col)) != null) {
+                    out.print(SET_TEXT_COLOR_BLUE);
+                    printPlayer(out, game.getBoard().getPiece(new ChessPosition(row, col)));
+                } else {
+                    out.print(EMPTY);
+                }
+                squareColor++;
+                return squareColor;
+            } else if (aMove.getStartPosition().getRow() == row && aMove.getStartPosition().getColumn() == col) {
+                if (squareColor % 2 == 0) {
+                    out.print(SET_BG_COLOR_YELLOW);
+                } else if (squareColor % 2 == 1) {
+                    out.print(SET_BG_COLOR_MAGENTA);
+                }
+                if (game.getBoard().getPiece(new ChessPosition(row, col)) != null) {
+                    out.print(SET_TEXT_COLOR_BLUE);
+                    printPlayer(out, game.getBoard().getPiece(new ChessPosition(row, col)));
+                } else {
+                    out.print(EMPTY);
+                }
+                squareColor++;
+                return squareColor;
+            }
+        }
+
+        drawPieces(out, game, row, squareColor, col);
+        squareColor++;
+        return squareColor;
     }
 }
 

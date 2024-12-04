@@ -28,6 +28,7 @@ public class ChessClient {
     private ChessGame currentGame;
     private int currentGameID;
     private ChessGame.TeamColor currentColor;
+    private String currentUsername;
     private SQLAuthDataAccess authList;
     private SQLGameDataAccess gameList;
 
@@ -58,6 +59,13 @@ public class ChessClient {
                     case "leave" -> leave();
                     default -> help();
                 };
+            } else if (playing == Playing.OBSERVING) {
+                return switch (cmd) {
+                    case "redraw" -> redrawBoard();
+                    case "highlight" -> highlightMoves();
+                    case "leave" -> leave();
+                    default -> help();
+                };
             } else {
                 return switch (cmd) {
                     case "create" -> createGame(params);
@@ -78,6 +86,7 @@ public class ChessClient {
         if (params.length == 3) {
             RegisterResult registerResult = server.register(new RegisterRequest(params[0], params[1], params[2]));
             setUserAuth(registerResult.authToken());
+            setCurrentUsername(registerResult.username());
             state = State.SIGNEDIN;
             return String.format("Logged in as %s", params[0]);
         }
@@ -89,6 +98,7 @@ public class ChessClient {
             try {
                 LoginResult loginResult = server.login(new LoginRequest(params[0], params[1]));
                 setUserAuth(loginResult.authToken());
+                setCurrentUsername(loginResult.username());
                 state = State.SIGNEDIN;
                 return String.format("Logged in as %s", params[0]);
             } catch (ResponseException e) {
@@ -127,14 +137,20 @@ public class ChessClient {
                 WebSocketFacade wsfacade = new WebSocketFacade(serverUrl, serverMessageHandler);
                 if (params[1] != null) {
                     if (params[1].equalsIgnoreCase("WHITE")) {
-                        currentColor = ChessGame.TeamColor.WHITE;
-                        server.joinGame(new JoinGameRequest(getUserAuth(), currentColor, id));
-                        wsfacade.connect(getUserAuth(), );
-                        PrintBoard.printBoard(stuff from ws class);
+                        setCurrentColor(ChessGame.TeamColor.WHITE);
+                        server.joinGame(new JoinGameRequest(getUserAuth(), getCurrentColor(), id));
+                        playing = Playing.PLAYING;
+                        wsfacade.connect(getUserAuth(), id, , );
+                        setCurrentGameID(id);
+                        PrintBoard.printBoard(stuff from ws class); I need a loadgame here but not for everybody
                         return String.format("You have joined the game");
                     } else if (params[1].equalsIgnoreCase("BLACK")) {
-                        currentColor = ChessGame.TeamColor.BLACK;
-                        server.joinGame(new JoinGameRequest(getUserAuth(), currentColor, id));
+                        setCurrentColor(ChessGame.TeamColor.BLACK);
+                        server.joinGame(new JoinGameRequest(getUserAuth(), getCurrentColor(), id));
+                        playing = Playing.PLAYING;
+                        wsfacade.connect(getUserAuth(), id);
+                        setCurrentGameID(id);
+                        PrintBoard.printBoard(stuff from ws class);
                         PrintBoard.printBoard(new ChessGame());
                         return String.format("You have joined the game");
                     } else {
@@ -148,19 +164,26 @@ public class ChessClient {
                 return String.format("Unsuccessful joining game");
             }
         }
-        return "";
+        return String.format("");
     }
 
     public String observeGame(String... params) {
         assertSignedIn();
-        if (params.length == 1) {
-            try {
-                var id = Integer.parseInt(params[0]);
-                //server.joinGame(new JoinGameRequest(getUserAuth(), null, id));
-                PrintBoard.printBoard(new ChessGame());
-            } catch (NumberFormatException e) {
-                return String.format("Invalid game ID");
+        try {
+            if (params.length == 1) {
+                WebSocketFacade wsfacade = new WebSocketFacade(serverUrl, serverMessageHandler);
+                try {
+                    var id = Integer.parseInt(params[0]);
+                    wsfacade.connect(getUserAuth(), id);
+                    setCurrentGameID(id);
+                    playing = Playing.OBSERVING;
+                    PrintBoard.printBoard(new ChessGame());
+                } catch (NumberFormatException e) {
+                    return String.format("Invalid game ID");
+                }
             }
+        } catch (ResponseException e) {
+            return String.format("An error occurred");
         }
         return String.format("");
     }
@@ -181,28 +204,21 @@ public class ChessClient {
         if (params.length == 1) {
             try {
                 String[] square = params[0].split("");
-                square[0] = square[0].toLowerCase();
                 int row = Integer.parseInt(square[1]);
-                int col = switch (square[0]) {
-                    case "a" -> 1;
-                    case "b" -> 2;
-                    case "c" -> 3;
-                    case "d" -> 4;
-                    case "e" -> 5;
-                    case "f" -> 6;
-                    case "g" -> 7;
-                    case "h" -> 8;
-                    default -> 0;
-                };
+                int col = getColumn(square[0].toLowerCase());
 
                 ChessPosition position = new ChessPosition(row, col);
-                PrintBoard.printHighlightedBoard(currentGame, currentGame.getBoard().getPiece(position), position);
-                return String.format("");
+                if (currentGame.getBoard().getPiece(position).getTeamColor() == getCurrentColor()) {
+                    PrintBoard.printHighlightedBoard(currentGame, currentGame.getBoard().getPiece(position), position);
+                    return String.format("");
+                } else {
+                    return String.format("You must choose a piece of your color");
+                }
             } catch (Exception e) {
                 return String.format("Invalid square");
             }
         }
-        return String.format("Invalid square");
+        return String.format("You must choose a piece");
     }
 
     private String makeMove(String[] params) {
@@ -218,10 +234,11 @@ public class ChessClient {
                 int endRow = Integer.parseInt(startPosition[1]);
                 int endCol = getColumn(endPosition[0]);
 
-                currentGame.makeMove(new ChessMove(
-                        new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), null));
+                ChessMove move = new ChessMove(new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), null);
+                currentGame.makeMove(move);
                 ws = new WebSocketFacade(serverUrl, serverMessageHandler);
-                ws.makeMove(getUserAuth(), object of type ChessMove);
+                ws.makeMove(getUserAuth(), getCurrentGameID(), move);
+
             } catch (Exception e) {
                 return String.format("Move could not be made");
             }
@@ -248,10 +265,11 @@ public class ChessClient {
                 int endRow = Integer.parseInt(startPosition[1]);
                 int endCol = getColumn(endPosition[0]);
 
-                currentGame.makeMove(new ChessMove(
-                        new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), promotionPiece));
+                ChessMove move = new ChessMove(
+                        new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), promotionPiece);
+                currentGame.makeMove(move);
                 ws = new WebSocketFacade(serverUrl, serverMessageHandler);
-                ws.makeMove(getUserAuth(), move);
+                ws.makeMove(getUserAuth(), getCurrentGameID(), move);
             } catch (Exception e) {
                 return String.format("Move could not be made");
             }
@@ -260,18 +278,23 @@ public class ChessClient {
     }
 
     private String resign() {
-
+        try {
+            ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+            ws.resign(getUserAuth(), getCurrentGameID(), getCurrentColor());
+            return String.format("");
+        } catch (Exception e) {
+            return String.format("Unsuccessful resigning");
+        }
     }
 
     private String leave() {
         try {
-            Where should I get the game from in order to call updateGame? Can I declare a GameData here in the client when a game is created and then update it in tandem with the real game?
-            GameData gameBeingPlayed = gameList.getGameByID();
-            Send something to the websocketfacade to update the game so that the username of that color is null;
+            GameData gameBeingPlayed = gameList.getGameByID(getCurrentGameID());
+            gameList.updateGame(gameBeingPlayed, getCurrentColor(), null);
             ws = new WebSocketFacade(serverUrl, serverMessageHandler);
-            ws.leave(getUserAuth(), );
+            ws.leave(getUserAuth(), getCurrentGameID(), getCurrentColor());
             playing = Playing.NOTPLAYING;
-            return String.format("%s has left the game", authList.getAuth(currentAuth).username());
+            return String.format("");
         } catch (Exception e) {
             return String.format("Could not leave game");
         }
@@ -280,16 +303,16 @@ public class ChessClient {
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
-                    register <USERNAME> <PASSWORD> <EMAIL> - to create an account
-                    login <USERNAME> <PASSWORD> - to play chess
+                    register <USERNAME> <PASSWORD> <EMAIL> - create an account
+                    login <USERNAME> <PASSWORD> - play chess
                     quit - playing chess
                     help - with possible commands
                     """;
         } else if (playing == Playing.PLAYING) {
             return """
                     redraw - the board
-                    highlight - legal moves
-                    move - a piece
+                    highlight <PIECE_POSITION> - see legal moves
+                    move <CURRENT_POSITION> <NEW_POSITION> <PROMOTION_PIECE> - move a piece
                     resign - the game
                     leave - the game
                     help - with possible commands
@@ -345,6 +368,22 @@ public class ChessClient {
     }
 
     private int getCurrentGameID() {
-        return currentGameID;2
+        return currentGameID;
+    }
+
+    private void setCurrentColor(ChessGame.TeamColor color) {
+        currentColor = color;
+    }
+
+    private ChessGame.TeamColor getCurrentColor() {
+        return currentColor;
+    }
+
+    private void setCurrentUsername(String username) {
+        currentUsername = username;
+    }
+
+    private String getCurrentUsername() {
+        return currentUsername;
     }
 }
