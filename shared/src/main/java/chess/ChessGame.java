@@ -194,8 +194,8 @@ public class ChessGame implements Cloneable {
         }
         return false;
     }
-
-    private Collection<ChessMove> allValidMoves(TeamColor teamColor) {
+    is it okay to make this public?
+    public Collection<ChessMove> allValidMoves(TeamColor teamColor) {
         Collection<ChessMove> allValidMoves = new ArrayList<ChessMove>();
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {

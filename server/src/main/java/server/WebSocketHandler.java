@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.SQLGameDataAccess;
 import org.eclipse.jetty.websocket.api.Session;
@@ -32,7 +33,7 @@ public class WebSocketHandler {
         connections.add(connectCommand.getUsername(), session);
         if (gameStatus == GameStatus.INPROGRESS) {
             if (connectCommand.getStatus() == PLAYING) {
-                String message = String.format("%s is playing as %s", connectCommand.getUsername(), connectCommand.getColor());
+                String message = String.format("%s is now playing as %s", connectCommand.getUsername(), connectCommand.getColor());
                 setCurrentUsername(connectCommand.getUsername());
                 var notification = new NotificationMessage(message);
                 connections.broadcast(connectCommand.getUsername(), notification);
@@ -56,6 +57,18 @@ public class WebSocketHandler {
                 var notification = new NotificationMessage(message);
                 connections.broadcast(null, load);
                 connections.broadcast(getCurrentUsername(), notification);
+                var game = gameList.getGameByID(makeMoveCommand.getGameID()).game();
+                if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+                    connections.broadcast(null, new NotificationMessage(String.format("WHITE is now in checkmate")));
+                } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+                    connections.broadcast(null, new NotificationMessage(String.format("BLACK is now in checkmate")));
+                } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
+                    connections.broadcast(null, new NotificationMessage(String.format("WHITE is now in check")));
+                } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
+                    connections.broadcast(null, new NotificationMessage(String.format("BLACK is now in check")));
+                } else if (game.allValidMoves(ChessGame.TeamColor.WHITE).isEmpty() && game.allValidMoves(ChessGame.TeamColor.BLACK).isEmpty()) {
+                    connections.broadcast(null, new NotificationMessage(String.format("Stalemate has been reached")));
+                }
             } else {
                 System.out.println(String.format("You cannot make a move because the game is over"));
             }
