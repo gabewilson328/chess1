@@ -34,11 +34,6 @@ public class REPL {
         System.out.println();
     }
 
-    public void sendMessage(ServerMessage serverMessage) {
-        System.out.println(SET_TEXT_COLOR_RED + serverMessage.getServerMessageType());
-        printPrompt();
-    }
-
     private void printPrompt() {
         System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
