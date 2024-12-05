@@ -1,17 +1,16 @@
 package serverfacade;
 
-import websocket.ServerMessageHandler;
 import websocket.messages.ServerMessage;
 
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class REPL implements ServerMessageHandler {
+public class REPL {
     private final ChessClient client;
 
     public REPL(String serverUrl) {
-        client = new ChessClient(serverUrl, this);
+        client = new ChessClient(serverUrl);
     }
 
     public void run() {

@@ -8,18 +8,15 @@ import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
-import model.GameData;
 import model.Playing;
 import request.*;
 import result.CreateGameResult;
 import result.LoginResult;
 import result.RegisterResult;
-import websocket.ServerMessageHandler;
 import websocket.WebSocketFacade;
 
 public class ChessClient {
     private final ServerFacade server;
-    private final ServerMessageHandler serverMessageHandler;
     private final String serverUrl;
     private WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
@@ -30,10 +27,10 @@ public class ChessClient {
     private ChessGame.TeamColor currentColor;
     private String currentUsername;
 
-    public ChessClient(String serverUrl, ServerMessageHandler serverMessageHandler) {
+    public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
-        this.serverMessageHandler = serverMessageHandler;
+        ;
     }
 
     public String eval(String input) {
@@ -132,7 +129,7 @@ public class ChessClient {
         if (params.length == 2) {
             try {
                 var id = Integer.parseInt(params[0]);
-                WebSocketFacade wsfacade = new WebSocketFacade(serverUrl, serverMessageHandler);
+                WebSocketFacade wsfacade = new WebSocketFacade(serverUrl);
                 if (params[1] != null) {
                     if (params[1].equalsIgnoreCase("WHITE")) {
                         setCurrentColor(ChessGame.TeamColor.WHITE);
@@ -165,7 +162,7 @@ public class ChessClient {
         assertSignedIn();
         try {
             if (params.length == 1) {
-                WebSocketFacade wsfacade = new WebSocketFacade(serverUrl, serverMessageHandler);
+                WebSocketFacade wsfacade = new WebSocketFacade(serverUrl);
                 try {
                     var id = Integer.parseInt(params[0]);
                     wsfacade.connect(getUserAuth(), id, getCurrentUsername(), playing.OBSERVING, getCurrentColor());
@@ -228,7 +225,7 @@ public class ChessClient {
                 int endRow = Integer.parseInt(startPosition[1]);
                 int endCol = getColumn(endPosition[0]);
                 ChessMove move = new ChessMove(new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), null);
-                ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+                ws = new WebSocketFacade(serverUrl);
                 ws.makeMove(getUserAuth(), getCurrentGameID(), move);
 
             } catch (Exception e) {
@@ -259,7 +256,7 @@ public class ChessClient {
 
                 ChessMove move = new ChessMove(new ChessPosition(startRow, startCol),
                         new ChessPosition(endRow, endCol), promotionPiece);
-                ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+                ws = new WebSocketFacade(serverUrl);
                 ws.makeMove(getUserAuth(), getCurrentGameID(), move);
             } catch (Exception e) {
                 return String.format("Move could not be made");
@@ -274,7 +271,7 @@ public class ChessClient {
         String line = scanner.nextLine();
         if (line.equalsIgnoreCase("YES")) {
             try {
-                ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+                ws = new WebSocketFacade(serverUrl);
                 ws.resign(getUserAuth(), getCurrentGameID(), getCurrentColor());
                 return String.format("You have resigned");
             } catch (Exception e) {
@@ -287,7 +284,7 @@ public class ChessClient {
 
     private String leave() {
         try {
-            ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+            ws = new WebSocketFacade(serverUrl);
             ws.leave(getUserAuth(), getCurrentGameID(), getCurrentColor());
             playing = Playing.NOTPLAYING;
             return String.format("");

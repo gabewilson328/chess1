@@ -93,72 +93,69 @@ public class WebSocketHandler {
         try {
             AuthData authData = authList.getAuth(makeMoveCommand.getAuthToken());
             if (authData != null) {
-                String username = authData.username();
-                try {
-                    var game = gameList.getGameByID(makeMoveCommand.getGameID()).game();
-                    if (game.getStatus() == ChessGame.Status.INPROGRESS) {
-                        ChessPiece piece = game.getBoard().getPiece(makeMoveCommand.getMove().getStartPosition());
-                        if (Objects.equals(gameList.getGameByID(makeMoveCommand.getGameID()).whiteUsername(), username)) {
-                            color = ChessGame.TeamColor.WHITE;
-                        } else if (Objects.equals(gameList.getGameByID(makeMoveCommand.getGameID()).blackUsername(), username)) {
-                            color = ChessGame.TeamColor.BLACK;
-                        }
-                        if (piece.getTeamColor() == color) {
-                            game.makeMove(makeMoveCommand.getMove());
-                            gameList.updateActualGame(gameID, game);
-
-                            var message = String.format("%s has moved %s to %s", username,
-                                    makeMoveCommand.getMove().getStartPosition(), makeMoveCommand.getMove().getEndPosition());
-                            var load = new LoadMessage(game);
-                            var notification = new NotificationMessage(message);
-
-                            connections.broadcast(null, gameID, load);
-                            connections.broadcast(username, gameID, notification);
-                        } else {
-                            var error = new ErrorMessage(String.format(
-                                    "You can't make a move for the other team"));
-                            connections.sendToPlayer(username, gameID, error);
-                        }
-
-                        if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
-                            connections.broadcast(null, gameID, new NotificationMessage(
-                                    String.format("%s is now in checkmate", username)));
-                        } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
-                            connections.broadcast(null, gameID, new NotificationMessage(
-                                    String.format("%s is now in checkmate", username)));
-                        } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
-                            connections.broadcast(null, gameID, new NotificationMessage(
-                                    String.format("%s is now in check", username)));
-                        } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
-                            connections.broadcast(null, gameID, new NotificationMessage(
-                                    String.format("%s is now in check", username)));
-                        } else if (game.isInStalemate(game.getTeamTurn())) {
-                            connections.broadcast(null, gameID, new NotificationMessage(
-                                    String.format("Stalemate has been reached")));
-                        }
-                    } else {
-                        System.out.println(String.format("You cannot make a move because the game is over"));
-                    }
-                } catch (InvalidMoveException e) {
-                    var error = new ErrorMessage(String.format(
-                            "An error occurred when %s attempted a move because the move was invalid", username));
-                    connections.sendToPlayer(username, gameID, error);
-                } catch (Exception e) {
-                    var error = new ErrorMessage(String.format("An error occurred when %s attempted a move", username));
-                    connections.sendToPlayer(username, gameID, error);
-                }
+                makeMoveCont(authData, makeMoveCommand, gameID);
             } else {
-                System.out.println(String.format("Bad auth token"));
-                //try {
-                //var error = new ErrorMessage(String.format(
-                //"An error occurred: bad auth token"));
-                //connections.sendToPlayer(username, gameID, error);
-                //} catch () {
-
-                //}
+                session.getRemote().sendString(new Gson().toJson(new ErrorMessage(String.format("Bad auth token"))));
             }
         } catch (DataAccessException e) {
             System.out.println("Die");
+        }
+    }
+
+    private void makeMoveCont(AuthData authData, MakeMoveCommand makeMoveCommand, int gameID) throws IOException {
+        String username = authData.username();
+        try {
+            var game = gameList.getGameByID(makeMoveCommand.getGameID()).game();
+            if (game.getStatus() == ChessGame.Status.INPROGRESS) {
+                ChessPiece piece = game.getBoard().getPiece(makeMoveCommand.getMove().getStartPosition());
+                if (Objects.equals(gameList.getGameByID(makeMoveCommand.getGameID()).whiteUsername(), username)) {
+                    color = ChessGame.TeamColor.WHITE;
+                } else if (Objects.equals(gameList.getGameByID(makeMoveCommand.getGameID()).blackUsername(), username)) {
+                    color = ChessGame.TeamColor.BLACK;
+                }
+                if (piece.getTeamColor() == color) {
+                    game.makeMove(makeMoveCommand.getMove());
+                    gameList.updateActualGame(gameID, game);
+
+                    var message = String.format("%s has moved %s to %s", username,
+                            makeMoveCommand.getMove().getStartPosition(), makeMoveCommand.getMove().getEndPosition());
+                    var load = new LoadMessage(game);
+                    var notification = new NotificationMessage(message);
+
+                    connections.broadcast(null, gameID, load);
+                    connections.broadcast(username, gameID, notification);
+                } else {
+                    var error = new ErrorMessage(String.format(
+                            "You can't make a move for the other team"));
+                    connections.sendToPlayer(username, gameID, error);
+                }
+
+                if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+                    connections.broadcast(null, gameID, new NotificationMessage(
+                            String.format("%s is now in checkmate", username)));
+                } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+                    connections.broadcast(null, gameID, new NotificationMessage(
+                            String.format("%s is now in checkmate", username)));
+                } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
+                    connections.broadcast(null, gameID, new NotificationMessage(
+                            String.format("%s is now in check", username)));
+                } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
+                    connections.broadcast(null, gameID, new NotificationMessage(
+                            String.format("%s is now in check", username)));
+                } else if (game.isInStalemate(game.getTeamTurn())) {
+                    connections.broadcast(null, gameID, new NotificationMessage(
+                            String.format("Stalemate has been reached")));
+                }
+            } else {
+                System.out.println(String.format("You cannot make a move because the game is over"));
+            }
+        } catch (InvalidMoveException e) {
+            var error = new ErrorMessage(String.format(
+                    "An error occurred when %s attempted a move because the move was invalid", username));
+            connections.sendToPlayer(username, gameID, error);
+        } catch (Exception e) {
+            var error = new ErrorMessage(String.format("An error occurred when %s attempted a move", username));
+            connections.sendToPlayer(username, gameID, error);
         }
     }
 
@@ -171,7 +168,6 @@ public class WebSocketHandler {
                 var message = String.format("%s left the game", username);
                 var notification = new NotificationMessage(message);
                 connections.broadcast(username, gameID, notification);
-                setCurrentUsername(null);
                 GameData game = gameList.getGameByID(gameID);
                 if (Objects.equals(game.whiteUsername(), username)) {
                     color = ChessGame.TeamColor.WHITE;
@@ -188,7 +184,7 @@ public class WebSocketHandler {
         }
     }
 
-    public void resign(ResignCommand resignCommand) {
+    public void resign(ResignCommand resignCommand) throws IOException {
         int gameID = resignCommand.getGameID();
         try {
             String username = authList.getAuth(resignCommand.getAuthToken()).username();
@@ -202,23 +198,11 @@ public class WebSocketHandler {
                 gameList.updateGameName(gameID, gameList.getGameByID(gameID).gameName() + " - DONE");
             } catch (Exception e) {
                 var error = new ErrorMessage(String.format("An error occurred when %s attempted to resign", username));
-                try {
-                    connections.broadcast(username, gameID, error);
-                } catch (Exception ex) {
-                    System.out.println(String.format("Didn't send resign message"));
-                }
+                connections.broadcast(username, gameID, error);
             }
         } catch (DataAccessException e) {
             System.out.println("Die");
         }
-    }
-
-    public void setCurrentUsername(String username) {
-        currentUsername = username;
-    }
-
-    public String getCurrentUsername() {
-        return currentUsername;
     }
 
     public enum GameStatus {

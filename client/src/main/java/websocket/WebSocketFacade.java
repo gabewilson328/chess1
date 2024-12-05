@@ -21,15 +21,13 @@ import java.net.URISyntaxException;
 public class WebSocketFacade extends Endpoint {
 
     Session session;
-    ServerMessageHandler serverMessageHandler;
     ChessGame storedGame;
 
 
-    public WebSocketFacade(String url, ServerMessageHandler serverMessageHandler) throws ResponseException {
+    public WebSocketFacade(String url) throws ResponseException {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/ws");
-            this.serverMessageHandler = serverMessageHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
@@ -67,7 +65,7 @@ public class WebSocketFacade extends Endpoint {
         try {
             var command = new ConnectCommand(authToken, gameID, username, status, color);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
-            
+
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
