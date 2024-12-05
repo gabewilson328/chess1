@@ -18,7 +18,7 @@ public class Server {
     private UserService userService;
     private GameService gameService;
     private ClearService clearService;
-    private final WebSocketHandler webSocketHandler;
+    private WebSocketHandler webSocketHandler;
 
     public Server() {
         try {
@@ -28,7 +28,7 @@ public class Server {
             userService = new UserService();
             gameService = new GameService();
             clearService = new ClearService();
-            webSocketHandler = new WebSocketHandler();
+            webSocketHandler = new WebSocketHandler(authList, gameList);
         } catch (DataAccessException e) {
             e.printStackTrace();
         }
@@ -207,6 +207,7 @@ public class Server {
             return serializer.toJson(error);
         }
     }
+
 
     public void stop() {
         Spark.stop();

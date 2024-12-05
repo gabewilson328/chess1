@@ -78,6 +78,7 @@ public class GameDataAccess implements GameDataInterface {
             }
         }
     }
+    
     //create a new game, copy all elements of old game into new game except whiteusername/blackusername, delete old game
 
     @Override

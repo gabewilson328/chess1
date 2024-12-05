@@ -1,6 +1,7 @@
 package dataaccess;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import model.GameData;
 
@@ -8,8 +9,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class SQLGameDataAccess implements GameDataInterface {
+
 
     public SQLGameDataAccess() throws DataAccessException {
         configureDatabase();
@@ -147,6 +150,7 @@ public class SQLGameDataAccess implements GameDataInterface {
             throw new DataAccessException(e.getMessage());
         }
     }
+
 
     @Override
     public void joinGameAsColor(ChessGame.TeamColor playerColor, int gameID, String username) throws DataAccessException {

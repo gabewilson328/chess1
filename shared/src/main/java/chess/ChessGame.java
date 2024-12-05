@@ -14,6 +14,7 @@ public class ChessGame implements Cloneable {
 
     TeamColor turn = TeamColor.WHITE;
     ChessBoard board = new ChessBoard();
+    Status status = Status.INPROGRESS;
 
 
     public ChessGame() {
@@ -225,5 +226,18 @@ public class ChessGame implements Cloneable {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    public void setStatus(Status newStatus) {
+        status = newStatus;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public enum Status {
+        INPROGRESS,
+        DONE
     }
 }
