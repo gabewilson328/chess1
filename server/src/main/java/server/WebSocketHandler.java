@@ -148,13 +148,14 @@ public class WebSocketHandler {
                     connections.sendToPlayer(username, gameID, error);
                 }
             } else {
-                try {
-                    var error = new ErrorMessage(String.format(
-                            "An error occurred: bad auth token"));
-                    connections.sendToPlayer(username, gameID, error);
-                } catch () {
+                System.out.println(String.format("Bad auth token"));
+                //try {
+                //var error = new ErrorMessage(String.format(
+                //"An error occurred: bad auth token"));
+                //connections.sendToPlayer(username, gameID, error);
+                //} catch () {
 
-                }
+                //}
             }
         } catch (DataAccessException e) {
             System.out.println("Die");
