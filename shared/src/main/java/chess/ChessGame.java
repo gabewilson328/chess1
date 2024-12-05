@@ -16,7 +16,6 @@ public class ChessGame implements Cloneable {
     ChessBoard board = new ChessBoard();
 
 
-
     public ChessGame() {
         board.resetBoard();
     }
@@ -196,8 +195,8 @@ public class ChessGame implements Cloneable {
         }
         return false;
     }
-    is it okay to make this public?
-    public Collection<ChessMove> allValidMoves(TeamColor teamColor) {
+
+    private Collection<ChessMove> allValidMoves(TeamColor teamColor) {
         Collection<ChessMove> allValidMoves = new ArrayList<ChessMove>();
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {

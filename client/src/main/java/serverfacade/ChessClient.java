@@ -8,8 +8,6 @@ import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
-import dataaccess.SQLAuthDataAccess;
-import dataaccess.SQLGameDataAccess;
 import model.GameData;
 import model.Playing;
 import request.*;
@@ -31,8 +29,6 @@ public class ChessClient {
     private int currentGameID;
     private ChessGame.TeamColor currentColor;
     private String currentUsername;
-    private SQLAuthDataAccess authList;
-    private SQLGameDataAccess gameList;
 
     public ChessClient(String serverUrl, ServerMessageHandler serverMessageHandler) {
         server = new ServerFacade(serverUrl);
@@ -231,10 +227,7 @@ public class ChessClient {
                 endPosition[0] = endPosition[0].toLowerCase();
                 int endRow = Integer.parseInt(startPosition[1]);
                 int endCol = getColumn(endPosition[0]);
-
                 ChessMove move = new ChessMove(new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), null);
-                currentGame.makeMove(move); is it okay to do this here or does it have to be in the websocket facade?
-                gameList.updateActualGame(getCurrentGameID(), currentGame);
                 ws = new WebSocketFacade(serverUrl, serverMessageHandler);
                 ws.makeMove(getUserAuth(), getCurrentGameID(), move);
 
@@ -266,8 +259,6 @@ public class ChessClient {
 
                 ChessMove move = new ChessMove(
                         new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), promotionPiece);
-                currentGame.makeMove(move);
-                gameList.updateActualGame(getCurrentGameID(), currentGame);
                 ws = new WebSocketFacade(serverUrl, serverMessageHandler);
                 ws.makeMove(getUserAuth(), getCurrentGameID(), move);
             } catch (Exception e) {

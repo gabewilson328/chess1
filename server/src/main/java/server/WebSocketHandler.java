@@ -1,6 +1,7 @@
 package server;
 
 import chess.ChessGame;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.SQLGameDataAccess;
 import org.eclipse.jetty.websocket.api.Session;
@@ -57,16 +58,18 @@ public class WebSocketHandler {
     private void makeMove(MakeMoveCommand makeMoveCommand, Session session) throws IOException {
         try {
             if (gameStatus == GameStatus.INPROGRESS) {
+                var game = gameList.getGameByID(makeMoveCommand.getGameID()).game();
+
+                game.makeMove(makeMoveCommand.getMove());
+                gameList.updateActualGame(makeMoveCommand.getGameID(), game);
+
                 var message = String.format("%s has moved %s to %s", getCurrentUsername(),
                         makeMoveCommand.getMove().getStartPosition(), makeMoveCommand.getMove().getEndPosition());
-                var load = new LoadMessage(gameList.getGameByID(makeMoveCommand.getGameID()).game());
+                var load = new LoadMessage(game);
                 var notification = new NotificationMessage(message);
 
-                call ChessGame.makeMove   Can that just be in the client?
-                        call data access, update in database
                 connections.broadcast(null, load);
                 connections.broadcast(getCurrentUsername(), notification);
-                var game = gameList.getGameByID(makeMoveCommand.getGameID()).game();
                 if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
                     connections.broadcast(null, new NotificationMessage(String.format("%s is now in checkmate", getCurrentUsername())));
                 } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
@@ -75,15 +78,18 @@ public class WebSocketHandler {
                     connections.broadcast(null, new NotificationMessage(String.format("%s is now in check", getCurrentUsername())));
                 } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
                     connections.broadcast(null, new NotificationMessage(String.format("%s is now in check", getCurrentUsername())));
-                } else if (game.allValidMoves(ChessGame.TeamColor.WHITE).isEmpty() && game.allValidMoves(ChessGame.TeamColor.BLACK).isEmpty()) {
+                } else if (game.isInStalemate(game.getTeamTurn())) {
                     connections.broadcast(null, new NotificationMessage(String.format("Stalemate has been reached")));
                 }
             } else {
                 System.out.println(String.format("You cannot make a move because the game is over"));
             }
+        } catch (InvalidMoveException e) {
+            var error = new ErrorMessage(String.format("An error occurred when %s attempted a move because the move was invalid", getCurrentUsername()));
+            connections.broadcastToPlayer(getCurrentUsername(), error);
         } catch (Exception e) {
             var error = new ErrorMessage(String.format("An error occurred when %s attempted a move", getCurrentUsername()));
-            connections.broadcast(getCurrentUsername(), error);
+            connections.broadcastToPlayer(getCurrentUsername(), error);
         }
     }
 
