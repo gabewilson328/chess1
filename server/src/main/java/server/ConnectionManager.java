@@ -14,36 +14,34 @@ public class ConnectionManager {
     public void add(String username, int gameID, Session session) {
         var connection = new Connection(username, session);
         ConcurrentHashMap<String, Connection> info = new ConcurrentHashMap<>();
+        if (!connections.isEmpty()) {
+            if (!connections.get(gameID).isEmpty()) {
+                info = connections.get(gameID);
+            }
+        }
         info.put(username, connection);
         connections.put(gameID, info);
     }
 
-    public void remove(int gameID) {
-        connections.remove(gameID);
+    public void remove(String username, int gameID) {
+        var info = connections.get(gameID);
+        if (info != null) {
+            info.remove(username);
+        }
     }
 
     public void broadcast(String excludeUsername, int gameID, ServerMessage serverMessage) throws IOException {
-        var removeList = new ArrayList<Connection>();
         var serializer = new Gson();
         for (var c : connections.get(gameID).values()) {
             if (c.session.isOpen()) {
                 if (!c.username.equals(excludeUsername)) {
                     c.send(serializer.toJson(serverMessage));
                 }
-            } else {
-                removeList.add(c);
             }
-        }
-
-        // Clean up any connections that were left open.
-        for (var c : removeList) {
-            if (!c.username.equals(excludeUsername))
-                connections.remove(c.username);
         }
     }
 
-    public void broadcastToPlayer(String username, int gameID, ServerMessage serverMessage) throws IOException {
-        var removeList = new ArrayList<Connection>();
+    public void sendToPlayer(String username, int gameID, ServerMessage serverMessage) throws IOException {
         var serializer = new Gson();
         var info = connections.get(gameID);
         var c = info.get(username);

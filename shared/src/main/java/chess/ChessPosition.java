@@ -18,6 +18,12 @@ public class ChessPosition {
         this.col = col;
     }
 
+    @Override
+    public String toString() {
+
+        return super.toString();
+    }
+
     /**
      * @return which row this position is in
      * 1 codes for the bottom row

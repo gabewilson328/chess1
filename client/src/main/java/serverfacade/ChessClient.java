@@ -158,7 +158,7 @@ public class ChessClient {
                 return String.format("Unsuccessful joining game");
             }
         }
-        return String.format("");
+        return String.format("Invalid input");
     }
 
     public String observeGame(String... params) {
@@ -272,7 +272,6 @@ public class ChessClient {
         Scanner scanner = new Scanner(System.in);
         System.out.println(String.format("Are you sure? [YES|NO]"));
         String line = scanner.nextLine();
-        scanner.close();
         if (line.equalsIgnoreCase("YES")) {
             try {
                 ws = new WebSocketFacade(serverUrl, serverMessageHandler);
@@ -288,8 +287,6 @@ public class ChessClient {
 
     private String leave() {
         try {
-            GameData gameBeingPlayed = gameList.getGameByID(getCurrentGameID());
-            gameList.updateGame(gameBeingPlayed, getCurrentColor(), null);
             ws = new WebSocketFacade(serverUrl, serverMessageHandler);
             ws.leave(getUserAuth(), getCurrentGameID(), getCurrentColor());
             playing = Playing.NOTPLAYING;
