@@ -1,5 +1,6 @@
 package server;
 
+import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.*;
 
@@ -8,23 +9,26 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<Integer, ConcurrentHashMap<String, Connection>> connections = new ConcurrentHashMap<>();
 
-    public void add(String username, Session session) {
+    public void add(String username, int gameID, Session session) {
         var connection = new Connection(username, session);
-        connections.put(username, connection);
+        ConcurrentHashMap<String, Connection> info = new ConcurrentHashMap<>();
+        info.put(username, connection);
+        connections.put(gameID, info);
     }
 
-    public void remove(String username) {
-        connections.remove(username);
+    public void remove(int gameID) {
+        connections.remove(gameID);
     }
 
-    public void broadcast(String excludeUsername, ServerMessage serverMessage) throws IOException {
+    public void broadcast(String excludeUsername, int gameID, ServerMessage serverMessage) throws IOException {
         var removeList = new ArrayList<Connection>();
-        for (var c : connections.values()) {
+        var serializer = new Gson();
+        for (var c : connections.get(gameID).values()) {
             if (c.session.isOpen()) {
                 if (!c.username.equals(excludeUsername)) {
-                    c.send(serverMessage.toString());
+                    c.send(serializer.toJson(serverMessage));
                 }
             } else {
                 removeList.add(c);
@@ -33,24 +37,20 @@ public class ConnectionManager {
 
         // Clean up any connections that were left open.
         for (var c : removeList) {
-            connections.remove(c.username);
+            if (!c.username.equals(excludeUsername))
+                connections.remove(c.username);
         }
     }
 
-    public void broadcastToPlayer(String username, ServerMessage serverMessage) throws IOException {
+    public void broadcastToPlayer(String username, int gameID, ServerMessage serverMessage) throws IOException {
         var removeList = new ArrayList<Connection>();
-        for (var c : connections.values()) {
-            if (c.session.isOpen()) {
-                if (c.username.equals(username)) {
-                    c.send(serverMessage.toString());
-                }
-            } else {
-                removeList.add(c);
+        var serializer = new Gson();
+        var info = connections.get(gameID);
+        var c = info.get(username);
+        if (c.session.isOpen()) {
+            if (c.username.equals(username)) {
+                c.send(serializer.toJson(serverMessage));
             }
-        }
-
-        for (var c : removeList) {
-            connections.remove(c.username);
         }
     }
 }

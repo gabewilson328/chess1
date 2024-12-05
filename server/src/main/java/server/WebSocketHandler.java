@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.SQLAuthDataAccess;
 import dataaccess.SQLGameDataAccess;
+import model.AuthData;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -44,71 +45,81 @@ public class WebSocketHandler {
 
     private void connect(ConnectCommand connectCommand, Session session) throws IOException {
         try {
-            String username = authList.getAuth(connectCommand.getAuthToken()).username();
-            GameData game = gameList.getGameByID(connectCommand.getGameID());
+            AuthData authData = authList.getAuth(connectCommand.getAuthToken());
+            if (authData != null) {
+                String username = authData.username();
+                int gameID = connectCommand.getGameID();
+                GameData game = gameList.getGameByID(gameID);
 
-            if (game.game().getStatus() == ChessGame.Status.INPROGRESS) {
+                if (game.game().getStatus() == ChessGame.Status.INPROGRESS) {
+                    connections.add(username, gameID, session);
+                    if (Objects.equals(game.whiteUsername(), username)) {
+                        color = ChessGame.TeamColor.WHITE;
+                    } else if (Objects.equals(game.blackUsername(), username)) {
+                        color = ChessGame.TeamColor.BLACK;
+                    }
+                    if (Objects.equals(game.whiteUsername(), username) || Objects.equals(game.blackUsername(), username)) {
+                        String message = String.format("%s is now playing as %s", username, color);
+                        setCurrentUsername(username);
+                        var notification = new NotificationMessage(message);
+                        connections.broadcast(username, gameID, notification);
+                    } else {
+                        String message = String.format("%s is now observing", username);
+                        setCurrentUsername(username);
+                        var notification = new NotificationMessage(message);
+                        connections.broadcast(username, gameID, notification);
+                    }
 
-                if (Objects.equals(game.whiteUsername(), username)) {
-                    color = ChessGame.TeamColor.WHITE;
-                } else if (Objects.equals(game.blackUsername(), username)) {
-                    color = ChessGame.TeamColor.BLACK;
-                }
-                if (Objects.equals(game.whiteUsername(), username) || Objects.equals(game.blackUsername(), username)) {
-                    String message = String.format("%s is now playing as %s", username, color);
-                    setCurrentUsername(username);
-                    var notification = new NotificationMessage(message);
-                    connections.broadcast(username, notification);
+                    try {
+                        connections.broadcastToPlayer(username, gameID, new LoadMessage(gameList.getGameByID(gameID).game()));
+                    } catch (Exception e) {
+                        var error = new ErrorMessage(String.format("An error occurred when %s attempted to join", getCurrentUsername()));
+                        connections.broadcast(getCurrentUsername(), gameID, error);
+                    }
                 } else {
-                    String message = String.format("%s is now observing", username);
-                    setCurrentUsername(username);
-                    var notification = new NotificationMessage(message);
-                    connections.broadcast(username, notification);
-                }
-
-                try {
-                    connections.broadcastToPlayer(username, new LoadMessage(gameList.getGameByID(connectCommand.getGameID()).game()));
-                } catch (Exception e) {
-                    var error = new ErrorMessage(String.format("An error occurred when %s attempted to join", getCurrentUsername()));
-                    connections.broadcast(getCurrentUsername(), error);
+                    connections.broadcastToPlayer(username, gameID,
+                            new ErrorMessage(String.format("You cannot make a move because the game is over")));
                 }
             } else {
-                System.out.println(String.format("You cannot make a move because the game is over"));
+                session.getRemote().sendString(new Gson().toJson(new ErrorMessage(String.format("Bad auth token"))));
             }
+
         } catch (DataAccessException e) {
-            System.out.println("Couldn't get username");
+            session.getRemote().sendString(new Gson().toJson(new ErrorMessage(String.format("Couldn't get username"))));
         }
     }
 
     private void makeMove(MakeMoveCommand makeMoveCommand, Session session) throws IOException {
+        int gameID = makeMoveCommand.getGameID();
         try {
             var game = gameList.getGameByID(makeMoveCommand.getGameID()).game();
 
             if (game.getStatus() == ChessGame.Status.INPROGRESS) {
                 game.makeMove(makeMoveCommand.getMove());
-                gameList.updateActualGame(makeMoveCommand.getGameID(), game);
+                gameList.updateActualGame(gameID, game);
 
                 var message = String.format("%s has moved %s to %s", getCurrentUsername(),
                         makeMoveCommand.getMove().getStartPosition(), makeMoveCommand.getMove().getEndPosition());
                 var load = new LoadMessage(game);
                 var notification = new NotificationMessage(message);
 
-                connections.broadcast(null, load);
-                connections.broadcast(getCurrentUsername(), notification);
+                connections.broadcast(null, gameID, load);
+                connections.broadcast(getCurrentUsername(), gameID, notification);
                 if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
-                    connections.broadcast(null, new NotificationMessage(
+                    connections.broadcast(null, gameID, new NotificationMessage(
                             String.format("%s is now in checkmate", getCurrentUsername())));
                 } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
-                    connections.broadcast(null, new NotificationMessage(
+                    connections.broadcast(null, gameID, new NotificationMessage(
                             String.format("%s is now in checkmate", getCurrentUsername())));
                 } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
-                    connections.broadcast(null, new NotificationMessage(
+                    connections.broadcast(null, gameID, new NotificationMessage(
                             String.format("%s is now in check", getCurrentUsername())));
                 } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
-                    connections.broadcast(null, new NotificationMessage(
+                    connections.broadcast(null, gameID, new NotificationMessage(
                             String.format("%s is now in check", getCurrentUsername())));
                 } else if (game.isInStalemate(game.getTeamTurn())) {
-                    connections.broadcast(null, new NotificationMessage(String.format("Stalemate has been reached")));
+                    connections.broadcast(null, gameID, new NotificationMessage(
+                            String.format("Stalemate has been reached")));
                 }
             } else {
                 System.out.println(String.format("You cannot make a move because the game is over"));
@@ -116,36 +127,41 @@ public class WebSocketHandler {
         } catch (InvalidMoveException e) {
             var error = new ErrorMessage(String.format(
                     "An error occurred when %s attempted a move because the move was invalid", getCurrentUsername()));
-            connections.broadcastToPlayer(getCurrentUsername(), error);
+            connections.broadcastToPlayer(getCurrentUsername(), gameID, error);
         } catch (Exception e) {
             var error = new ErrorMessage(String.format("An error occurred when %s attempted a move", getCurrentUsername()));
-            connections.broadcastToPlayer(getCurrentUsername(), error);
+            connections.broadcastToPlayer(getCurrentUsername(), gameID, error);
         }
     }
 
     private void leave(LeaveCommand leaveCommand) throws IOException {
+        int gameID = leaveCommand.getGameID();
         try {
-            connections.remove(getCurrentUsername());
+            connections.remove(gameID);
             var message = String.format("%s left the game", getCurrentUsername());
             var notification = new NotificationMessage(message);
-            connections.broadcast(getCurrentUsername(), notification);
+            connections.broadcast(getCurrentUsername(), gameID, notification);
             setCurrentUsername(null);
         } catch (Exception e) {
             var error = new ErrorMessage(String.format("An error occurred when %s attempted to leave", getCurrentUsername()));
-            connections.broadcast(getCurrentUsername(), error);
+            connections.broadcast(getCurrentUsername(), gameID, error);
         }
     }
 
     public void resign(ResignCommand resignCommand) {
+        int gameID = resignCommand.getGameID();
         try {
             var message = String.format("%s has resigned. The game is now over", getCurrentUsername());
             var notification = new NotificationMessage(message);
-            connections.broadcast(getCurrentUsername(), notification);
-            gameList.getGameByID(resignCommand.getGameID()).game().setStatus(ChessGame.Status.DONE);
+            connections.broadcast(getCurrentUsername(), gameID, notification);
+            ChessGame game = gameList.getGameByID(gameID).game();
+            game.setStatus(ChessGame.Status.DONE);
+            gameList.updateActualGame(gameID, game);
+            gameList.updateGameName(gameID, gameList.getGameByID(gameID).gameName() + " - DONE");
         } catch (Exception e) {
             var error = new ErrorMessage(String.format("An error occurred when %s attempted to resign", getCurrentUsername()));
             try {
-                connections.broadcast(getCurrentUsername(), error);
+                connections.broadcast(getCurrentUsername(), gameID, error);
             } catch (Exception ex) {
                 System.out.println(String.format("Didn't send resign message"));
             }

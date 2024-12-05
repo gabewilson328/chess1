@@ -257,8 +257,8 @@ public class ChessClient {
                 int endRow = Integer.parseInt(startPosition[1]);
                 int endCol = getColumn(endPosition[0]);
 
-                ChessMove move = new ChessMove(
-                        new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), promotionPiece);
+                ChessMove move = new ChessMove(new ChessPosition(startRow, startCol),
+                        new ChessPosition(endRow, endCol), promotionPiece);
                 ws = new WebSocketFacade(serverUrl, serverMessageHandler);
                 ws.makeMove(getUserAuth(), getCurrentGameID(), move);
             } catch (Exception e) {
@@ -277,7 +277,6 @@ public class ChessClient {
             try {
                 ws = new WebSocketFacade(serverUrl, serverMessageHandler);
                 ws.resign(getUserAuth(), getCurrentGameID(), getCurrentColor());
-                gameList.updateGameName(getCurrentGameID(), gameList.getGameByID(getCurrentGameID()).gameName() + " - DONE");
                 return String.format("You have resigned");
             } catch (Exception e) {
                 return String.format("Unsuccessful resigning");
