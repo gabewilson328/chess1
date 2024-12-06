@@ -20,7 +20,7 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-
+        //rewrite position
         return super.toString();
     }
 
