@@ -51,34 +51,29 @@ public class WebSocketHandler {
                 String username = authData.username();
                 int gameID = connectCommand.getGameID();
                 GameData game = gameList.getGameByID(gameID);
-
-                if (game.game().getStatus() == ChessGame.Status.INPROGRESS) {
-                    connections.add(username, gameID, session);
-                    if (Objects.equals(game.whiteUsername(), username)) {
-                        color = ChessGame.TeamColor.WHITE;
-                    } else if (Objects.equals(game.blackUsername(), username)) {
-                        color = ChessGame.TeamColor.BLACK;
-                    }
-                    if (Objects.equals(game.whiteUsername(), username) || Objects.equals(game.blackUsername(), username)) {
-                        String message = String.format("%s is now playing as %s", username, color);
-                        var notification = new NotificationMessage(message);
-                        connections.broadcast(username, gameID, notification);
-                    } else {
-                        String message = String.format("%s is now observing", username);
-                        var notification = new NotificationMessage(message);
-                        connections.broadcast(username, gameID, notification);
-                    }
-
-                    try {
-                        connections.sendToPlayer(username, gameID, new LoadMessage(gameList.getGameByID(gameID).game()));
-                    } catch (Exception e) {
-                        var error = new ErrorMessage(String.format("An error occurred when %s attempted to join", username));
-                        connections.broadcast(username, gameID, error);
-                    }
-                } else {
-                    connections.sendToPlayer(username, gameID,
-                            new ErrorMessage(String.format("You cannot make a move because the game is over")));
+                connections.add(username, gameID, session);
+                if (Objects.equals(game.whiteUsername(), username)) {
+                    color = ChessGame.TeamColor.WHITE;
+                } else if (Objects.equals(game.blackUsername(), username)) {
+                    color = ChessGame.TeamColor.BLACK;
                 }
+                if (Objects.equals(game.whiteUsername(), username) || Objects.equals(game.blackUsername(), username)) {
+                    String message = String.format("%s is now playing as %s", username, color);
+                    var notification = new NotificationMessage(message);
+                    connections.broadcast(username, gameID, notification);
+                } else {
+                    String message = String.format("%s is now observing", username);
+                    var notification = new NotificationMessage(message);
+                    connections.broadcast(username, gameID, notification);
+                }
+
+                try {
+                    connections.sendToPlayer(username, gameID, new LoadMessage(gameList.getGameByID(gameID).game()));
+                } catch (Exception e) {
+                    var error = new ErrorMessage(String.format("An error occurred when %s attempted to join", username));
+                    connections.broadcast(username, gameID, error);
+                }
+
             } else {
                 session.getRemote().sendString(new Gson().toJson(new ErrorMessage(String.format("Bad auth token"))));
             }
@@ -147,7 +142,8 @@ public class WebSocketHandler {
                             String.format("Stalemate has been reached")));
                 }
             } else {
-                System.out.println(String.format("You cannot make a move because the game is over"));
+                connections.sendToPlayer(username, gameID,
+                        new ErrorMessage(String.format("You cannot join because the game is over")));
             }
         } catch (InvalidMoveException e) {
             var error = new ErrorMessage(String.format(
@@ -187,18 +183,29 @@ public class WebSocketHandler {
     public void resign(ResignCommand resignCommand) throws IOException {
         int gameID = resignCommand.getGameID();
         try {
+            var game = gameList.getGameByID(gameID).game();
             String username = authList.getAuth(resignCommand.getAuthToken()).username();
-            try {
-                var message = String.format("%s has resigned. The game is now over", username);
-                var notification = new NotificationMessage(message);
-                connections.broadcast(username, gameID, notification);
-                ChessGame game = gameList.getGameByID(gameID).game();
-                game.setStatus(ChessGame.Status.DONE);
-                gameList.updateActualGame(gameID, game);
-                gameList.updateGameName(gameID, gameList.getGameByID(gameID).gameName() + " - DONE");
-            } catch (Exception e) {
-                var error = new ErrorMessage(String.format("An error occurred when %s attempted to resign", username));
-                connections.broadcast(username, gameID, error);
+            if (game.getStatus() == ChessGame.Status.INPROGRESS) {
+                if (Objects.equals(gameList.getGameByID((resignCommand).getGameID()).whiteUsername(), username)
+                        || Objects.equals(gameList.getGameByID(resignCommand.getGameID()).blackUsername(), username)) {
+                    try {
+                        var message = String.format("%s has resigned. The game is now over", username);
+                        var notification = new NotificationMessage(message);
+                        connections.broadcast(null, gameID, notification);
+                        game.setStatus(ChessGame.Status.DONE);
+                        gameList.updateActualGame(gameID, game);
+                        gameList.updateGameName(gameID, gameList.getGameByID(gameID).gameName() + " - DONE");
+                    } catch (Exception e) {
+                        var error = new ErrorMessage(String.format("An error occurred when you attempted to resign"));
+                        connections.sendToPlayer(username, gameID, error);
+                    }
+                } else {
+                    var error = new ErrorMessage(String.format("As an observer you cannot resign"));
+                    connections.sendToPlayer(username, gameID, error);
+                }
+            } else {
+                var error = new ErrorMessage(String.format("You cannot resign after the game is over"));
+                connections.sendToPlayer(username, gameID, error);
             }
         } catch (DataAccessException e) {
             System.out.println("Die");

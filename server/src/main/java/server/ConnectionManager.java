@@ -15,8 +15,10 @@ public class ConnectionManager {
         var connection = new Connection(username, session);
         ConcurrentHashMap<String, Connection> info = new ConcurrentHashMap<>();
         if (!connections.isEmpty()) {
-            if (!connections.get(gameID).isEmpty()) {
-                info = connections.get(gameID);
+            if (connections.get(gameID) != null) {
+                if (!connections.get(gameID).isEmpty()) {
+                    info = connections.get(gameID);
+                }
             }
         }
         info.put(username, connection);
